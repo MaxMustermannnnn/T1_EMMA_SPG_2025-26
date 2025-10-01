@@ -88,38 +88,7 @@ Installiere alle Pakete:
 text
 npm install
 
-⚠️ WICHTIG: Erstelle die .env Datei
 
-Im backend/ Ordner gibt es eine Datei namens .env.example.
-
-Windows PowerShell:
-
-text
-copy .env.example .env
-
-Mac/Linux/Git Bash:
-
-text
-cp .env.example .env
-
-Öffne die neue .env Datei (mit VS Code oder Notepad)
-
-Füge die Database URL ein:
-
-Die Datei sieht so aus:
-
-text
-DATABASE_URL=your-neon-database-url-here
-PORT=5000
-NODE_ENV=development
-
-Frage [DEIN NAME] nach der richtigen DATABASE_URL!
-
-Ersetze your-neon-database-url-here mit der URL, die du bekommst.
-Sollte etwa so aussehen:
-
-text
-DATABASE_URL=postgresql://user:password@ep-xxx.eu-central-1.aws.neon.tech/neondb?sslmode=require
 
 Starte den Backend-Server:
 
