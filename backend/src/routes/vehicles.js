@@ -27,20 +27,37 @@ DELETE /api/vehicles/:id        !DONE!
 // Create vehicle
 
 router.post("/", async (req, res) => {
-    try {
-        //Daten kommen als JSON im Request-Body vom Frontend
-        const newVehicle = req.body;
+  try {
+    const body = req.body;
 
-        // Insert mit Drizzle-ORM:
-        const inserted = await db.insert(vehicles)
-            .values(newVehicle)
-            .returning(); //gibt das neu angelegte Fahrzeug zurück
-        
-        res.status(201).json(inserted[0]); // [] da returning ein Array liefert
-    } catch (error) {
-        res.status(500).json({ error: error.message});
-    }
+    const newVehicle = {
+      userId: body.userId,
+      type: body.type,
+      brand: body.brand,
+      model: body.model,
+      licensePlate: body.licensePlate,
+      vin: body.vin,
+      mileage: body.mileage,
+      color: body.color,
+      purchaseDate: body.purchaseDate,
+      notes: body.notes,
+      bildurl: body.bildurl ?? null   // WICHTIG: explizit setzen
+    };
+
+    console.log("NEW VEHICLE:", newVehicle);
+
+    const inserted = await db
+      .insert(vehicles)
+      .values(newVehicle)
+      .returning();
+
+    res.status(201).json(inserted[0]);
+  } catch (error) {
+  console.error("INSERT ERROR FULL:", error);
+  res.status(500).json({ error: error.message });
+}
 });
+
 
 //  Get all vehicles
 
