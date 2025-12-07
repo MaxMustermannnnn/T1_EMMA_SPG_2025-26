@@ -1,14 +1,10 @@
 const express = require("express");
 const router = express.Router();
 
-
-
 // Datenbank & Table-Model
 const db = require("../db/db");
 const { vehicles } = require("../db/schema.js");
 const { eq } = require("drizzle-orm");
-
-
 
 /*
 GET /api/vehicles               !DONE!
@@ -41,23 +37,19 @@ router.post("/", async (req, res) => {
       color: body.color,
       purchaseDate: body.purchaseDate,
       notes: body.notes,
-      bildurl: body.bildurl ?? null   // WICHTIG: explizit setzen
+      bildurl: body.bildurl ?? null, // WICHTIG: explizit setzen
     };
 
     console.log("NEW VEHICLE:", newVehicle);
 
-    const inserted = await db
-      .insert(vehicles)
-      .values(newVehicle)
-      .returning();
+    const inserted = await db.insert(vehicles).values(newVehicle).returning();
 
     res.status(201).json(inserted[0]);
   } catch (error) {
-  console.error("INSERT ERROR FULL:", error);
-  res.status(500).json({ error: error.message });
-}
+    console.error("INSERT ERROR FULL:", error);
+    res.status(500).json({ error: error.message });
+  }
 });
-
 
 //  Get all vehicles
 
@@ -73,35 +65,32 @@ router.get("/", async (req, res) => {
 // Get Vehicle by ID
 
 router.get("/:id", async (req, res) => {
-    try {
-        const id = Number(req.params.id);
-        const vehicle = await db
-            .select()
-            .from(vehicles)
-            .where(eq(vehicles.id, id));
-        if (vehicle.length === 0) {
-            return res.status(404).json({ error: "Fahrzeug nicht gefunden" });
-        }
-        res.json(vehicle[0]);
-    } catch (err) {
-        res.status(500).json({ error: err.message });
+  try {
+    const id = Number(req.params.id);
+    const vehicle = await db.select().from(vehicles).where(eq(vehicles.id, id));
+    if (vehicle.length === 0) {
+      return res.status(404).json({ error: "Fahrzeug nicht gefunden" });
     }
-})
+    res.json(vehicle[0]);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 
 // Get Vehicles by User ID
 
 router.get("/user/:userId", async (req, res) => {
-    try {
-        const userId = Number(req.params.userId);
-        const userVehicles = await db
-            .select()
-            .from(vehicles)
-            .where(eq(vehicles.userId, userId));
-        res.json(userVehicles);
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
-})
+  try {
+    const userId = Number(req.params.userId);
+    const userVehicles = await db
+      .select()
+      .from(vehicles)
+      .where(eq(vehicles.userId, userId));
+    res.json(userVehicles);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 
 //  Update Vehicle by ID
 
@@ -126,8 +115,6 @@ router.put("/:id", async (req, res) => {
   }
 });
 
-
-
 //  DELETE Vehicle by ID
 
 router.delete("/:id", async (req, res) => {
@@ -148,6 +135,5 @@ router.delete("/:id", async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
-
 
 module.exports = router;
