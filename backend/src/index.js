@@ -7,8 +7,7 @@ require('dotenv').config();
 const documentsRouter = require('./routes/documents');
 const vehiclesRouter = require('./routes/vehicles');
 const usersRouter = require('./routes/users'); 
-
-// const maintenancesRouter = require('./routes/maintenances'); <--- Muss noch einkommentiert werden
+const maintenancesRouter = require('./routes/maintenances'); 
 
 
 const app = express();
@@ -23,7 +22,7 @@ app.use('/api/documents', documentsRouter);
 app.use('/api/vehicles', vehiclesRouter);
 
 app.use('/api/users', usersRouter);
-//app.use('/api/maintenances', maintenancesRouter);
+app.use('/api/maintenances', maintenancesRouter);
 
 
 
