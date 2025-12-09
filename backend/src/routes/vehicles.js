@@ -1,28 +1,14 @@
 const express = require("express");
-const router = express.Router();
+const router = express.Router(); // Subrouter für /api/vehicles
 
 // Datenbank & Table-Model
-const db = require("../db/db");
-const { vehicles } = require("../db/schema.js");
-const { eq } = require("drizzle-orm");
+const db = require("../db/db"); // Drizzle Instanz
+const { vehicles } = require("../db/schema.js"); // Tabelle Fahrzeuge
+const { eq } = require("drizzle-orm"); // WHERE-Helfer
 
-/*
-GET /api/vehicles               !DONE!
-
-GET /api/vehicles/:id           !DONE!
-
-GET /api/vehicles/user/:userId  !DONE!
-
-POST /api/vehicles              !DONE!
-
-UPDATE /api/vehicles/:id        !DONE!
-
-DELETE /api/vehicles/:id        !DONE!
-*/
-
-// Create vehicle               !DONE!
-
+// Create vehicle – legt Fahrzeug für eingeloggten Nutzer an, nutzt userId aus Token
 router.post("/", async (req, res) => {
+  // req.user.id kommt aus authMiddleware, req.body: Fahrzeuginfos
   try {
     const body = req.body;
 
@@ -51,29 +37,30 @@ router.post("/", async (req, res) => {
   }
 });
 
-//  Get all vehicles
-
+//  Get all vehicles – listet nur Fahrzeuge des eingeloggten Nutzers
 router.get("/", async (req, res) => {
+  // nutzt req.user.id zur Filterung
   try {
-    const allVehicles = await db.select().from(vehicles).where(eq(vehicles.userId, req.user.id)); //Nur eigene Autos sichtbar
+    const allVehicles = await db
+      .select()
+      .from(vehicles)
+      .where(eq(vehicles.userId, req.user.id)); //Nur eigene Autos sichtbar
     res.json(allVehicles);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
-// Get Vehicle by ID
-
+// Get Vehicle by ID – prüft Besitzrecht vor Rückgabe
 router.get("/:id", async (req, res) => {
+  // req.params.id: Fahrzeug-ID, Abgleich vehicle.userId vs req.user.id
   try {
     const id = Number(req.params.id);
-    const result = await db
-      .select()
-      .from(vehicles)
-      .where(eq(vehicles.id, id));
+    const result = await db.select().from(vehicles).where(eq(vehicles.id, id));
 
     const vehicle = result[0];
-    if (!vehicle) return res.status(404).json({ error: "Fahrzeug nicht gefunden" });
+    if (!vehicle)
+      return res.status(404).json({ error: "Fahrzeug nicht gefunden" });
 
     if (vehicle.userId !== req.user.id) {
       return res.status(403).json({ error: "Keine Berechtigung" });
@@ -85,10 +72,9 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-
-// Get Vehicles by User ID
-
+// Get Vehicles by User ID – alle Fahrzeuge eines Nutzers, keine Besitzprüfung hier
 router.get("/user/:userId", async (req, res) => {
+  // req.params.userId: Nutzer-ID dessen Fahrzeuge geladen werden sollen
   try {
     const userId = Number(req.params.userId);
     const userVehicles = await db
@@ -101,9 +87,9 @@ router.get("/user/:userId", async (req, res) => {
   }
 });
 
-//  Update Vehicle by ID
-
+//  Update Vehicle by ID – nur Besitzer darf aktualisieren
 router.put("/:id", async (req, res) => {
+  // req.params.id: Fahrzeug-ID; req.body: neue Daten; Besitzprüfung über req.user.id
   try {
     const id = Number(req.params.id);
 
@@ -113,7 +99,8 @@ router.put("/:id", async (req, res) => {
       .where(eq(vehicles.id, id));
 
     const vehicle = existing[0];
-    if (!vehicle) return res.status(404).json({ error: "Fahrzeug nicht gefunden" });
+    if (!vehicle)
+      return res.status(404).json({ error: "Fahrzeug nicht gefunden" });
     if (vehicle.userId !== req.user.id) {
       return res.status(403).json({ error: "Keine Berechtigung" });
     }
@@ -131,9 +118,9 @@ router.put("/:id", async (req, res) => {
   }
 });
 
-//  DELETE Vehicle by ID
-
+//  DELETE Vehicle by ID – nur Besitzer darf löschen
 router.delete("/:id", async (req, res) => {
+  // req.params.id: Fahrzeug-ID; Besitzprüfung über req.user.id
   try {
     const id = Number(req.params.id);
 
@@ -143,7 +130,8 @@ router.delete("/:id", async (req, res) => {
       .where(eq(vehicles.id, id));
 
     const vehicle = existing[0];
-    if (!vehicle) return res.status(404).json({ error: "Fahrzeug nicht gefunden" });
+    if (!vehicle)
+      return res.status(404).json({ error: "Fahrzeug nicht gefunden" });
     if (vehicle.userId !== req.user.id) {
       return res.status(403).json({ error: "Keine Berechtigung" });
     }

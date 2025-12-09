@@ -1,25 +1,19 @@
 const express = require("express");
-const router = express.Router();
-const bcrypt = require("bcrypt");
-const jwt = require("jsonwebtoken");
+const router = express.Router(); // Subrouter für /api/users
+const bcrypt = require("bcrypt"); // Passwort-Hashing
+const jwt = require("jsonwebtoken"); // JWT-Erzeugung/Prüfung
 
 // Datenbank & Table-Model
-const db = require("../db/db");
-const { users } = require("../db/schema.js");
-const { eq } = require("drizzle-orm");
+const db = require("../db/db"); // Drizzle DB-Client
+const { users } = require("../db/schema.js"); // Users-Tabelle
+const { eq } = require("drizzle-orm"); // Vergleichsoperator für WHERE
 
-// TODO:
-/*
-    create user
-    Get user by id
-    update user by id
-    delete user by id
-    
-
-*/
+const authMiddleware = require("../middleware/authMiddleware"); // prüft JWT und setzt req.user
 
 //Create User
+// Erstellt einen neuen Nutzer: Passwort wird gehasht, in DB gespeichert, Rückgabe ohne Passwort
 router.post("/", async (req, res) => {
+  // req.body: { email, password, username, first_name, last_name }
   try {
     const body = req.body;
 
@@ -47,9 +41,11 @@ router.post("/", async (req, res) => {
 });
 
 //Get User by ID
+// Liest einen Nutzer per ID aus, entfernt das Passwort vor der Ausgabe
 router.get("/:id", async (req, res) => {
+  // req.params.id: numerische User-ID
   try {
-    const userId = req.params.id;
+    const userId = Number(req.params.id);
     const user = await db.select().from(users).where(eq(users.id, userId));
     if (user.length === 0) {
       return res.status(404).json({ error: "Benutzer nicht gefunden" });
@@ -64,9 +60,18 @@ router.get("/:id", async (req, res) => {
 });
 
 //Update User by ID
-router.put("/:id", async (req, res) => {
+// Aktualisiert eigene Nutzerdaten; Auth-Zwang und Eigentumsprüfung
+router.put("/:id", authMiddleware, async (req, res) => {
+  // authMiddleware -> req.user.id aus Token
   try {
-    const userId = req.params.id;
+    const userId = Number(req.params.id);
+
+    if (!req.user || req.user.id !== userId) {
+      return res
+        .status(403)
+        .json({ error: "Du darfst nur deinen eigenen Account bearbeiten" });
+    }
+
     const body = req.body;
     const updatedUser = {
       email: body.email,
@@ -93,9 +98,18 @@ router.put("/:id", async (req, res) => {
 });
 
 //Delete User by ID
-router.delete("/:id", async (req, res) => {
+// Löscht den eigenen Account; Auth-Zwang und Eigentumsprüfung
+router.delete("/:id", authMiddleware, async (req, res) => {
+  // req.params.id: Ziel-User; req.user.id: Besitzer aus Token
   try {
-    const userId = req.params.id;
+    const userId = Number(req.params.id);
+
+    if (!req.user || req.user.id !== userId) {
+      return res
+        .status(403)
+        .json({ error: "Du darfst nur deinen eigenen Account löschen!" });
+    }
+
     const deleted = await db
       .delete(users)
       .where(eq(users.id, userId))
@@ -111,27 +125,28 @@ router.delete("/:id", async (req, res) => {
 });
 
 //Login User
-
+// Prüft Anmeldedaten, vergleicht Passwort-Hash und erstellt JWT bei Erfolg
 router.post("/login", async (req, res) => {
+  // req.body: { email, password }, Rückgabe: { token }
   try {
     const { email, password } = req.body;
     const result = await db.select().from(users).where(eq(users.email, email));
     const user = result[0];
 
-    if (!user){
-      return res.status(401).json({ error: "Benutzer oder Passwort falsch"})
+    if (!user) {
+      return res.status(401).json({ error: "Benutzer oder Passwort falsch" });
     }
 
     const isValid = await bcrypt.compare(password, user.password);
     if (!isValid) {
-      return res.status(401).json({ error: "Benutzer oder Passwort falsch"})
+      return res.status(401).json({ error: "Benutzer oder Passwort falsch" });
     }
 
     // JWT Token erstellen
     const token = jwt.sign(
       {
         id: user.id,
-        email: user.email
+        email: user.email,
       },
       process.env.JWT_SECRET,
       { expiresIn: "1h" }
@@ -143,6 +158,5 @@ router.post("/login", async (req, res) => {
     res.status(500).json({ error: "Login fehlgeschlagen" });
   }
 });
-
 
 module.exports = router;

@@ -1,27 +1,14 @@
 const express = require("express");
-const router = express.Router();
+const router = express.Router(); // Subrouter für /api/maintenances
 
 // Datenbank & Table-Model
-const db = require("../db/db");
-const { maintenances } = require("../db/schema.js");
-const { eq } = require("drizzle-orm");
+const db = require("../db/db"); // Drizzle Instanz
+const { maintenances } = require("../db/schema.js"); // Tabelle Wartungen
+const { eq } = require("drizzle-orm"); // WHERE-Helfer
 
-/*
-Todo:
-
-Get maintenances by id DONE!
-
-Get maintenances by vehicleId DONE!
-
-Create maintenance  DONE
-
-update maintenance DONE
-
-delete maintenance DONE
-*/
-
-// Get maintenance by ID
+// Get maintenance by ID – holt einen Wartungseintrag per Primärschlüssel
 router.get("/:id", async (req, res) => {
+  // req.params.id: numerische Wartungs-ID
   try {
     const maintenanceId = Number(req.params.id);
     const maintenance = await db
@@ -34,8 +21,9 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-// Get maintenances by vehicleId
+// Get maintenances by vehicleId – listet alle Wartungen für ein bestimmtes Fahrzeug
 router.get("/vehicle/:vehicleId", async (req, res) => {
+  // req.params.vehicleId: FK auf Fahrzeug
   try {
     const vehicleId = Number(req.params.vehicleId);
     const maintenanceRecords = await db
@@ -48,8 +36,9 @@ router.get("/vehicle/:vehicleId", async (req, res) => {
   }
 });
 
-//Create maintenance
+//Create maintenance – legt neuen Wartungseintrag an, optional Felder mit Defaults
 router.post("/", async (req, res) => {
+  // req.body enthält Pflichtfelder (vehicleId, date, type, category) plus optionale Felder
   try {
     const body = req.body;
     const newMaintenance = {
@@ -81,8 +70,9 @@ router.post("/", async (req, res) => {
   }
 });
 
-// Update maintenance
+// Update maintenance – überschreibt Felder eines bestehenden Eintrags
 router.put("/:id", async (req, res) => {
+  // req.params.id: Ziel-Wartung, req.body: neue Werte
   try {
     const maintenanceId = Number(req.params.id);
     const body = req.body;
@@ -118,8 +108,9 @@ router.put("/:id", async (req, res) => {
   }
 });
 
-// Delete maintenance
+// Delete maintenance – entfernt Eintrag dauerhaft
 router.delete("/:id", async (req, res) => {
+  // req.params.id: zu löschende Wartung
   try {
     const maintenanceId = Number(req.params.id);
 

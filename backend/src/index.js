@@ -1,49 +1,49 @@
-const express = require('express');
-const cors = require('cors');
-require('dotenv').config();
+const express = require("express"); // Express-App für HTTP-Server
+const cors = require("cors"); // CORS-Header erlauben Frontend-Zugriff
+require("dotenv").config(); // Lädt .env (PORT, JWT_SECRET, DB-URL)
 
-
-// Requires von Routen(vehicles, users und maintenances)
-const documentsRouter = require('./routes/documents');
-const vehiclesRouter = require('./routes/vehicles');
-const usersRouter = require('./routes/users'); 
-const maintenancesRouter = require('./routes/maintenances'); 
-const authMiddleware = require("./middleware/authMiddleware");
-
-
+// Route-Module (Dokumente, Fahrzeuge, Nutzer, Wartungen)
+const documentsRouter = require("./routes/documents");
+const vehiclesRouter = require("./routes/vehicles");
+const usersRouter = require("./routes/users");
+const maintenancesRouter = require("./routes/maintenances");
+const authMiddleware = require("./middleware/authMiddleware"); // prüft JWT
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5000; // Fallback auf 5000, falls .env fehlt
 
 //  CORS und JSON-Middleware
-app.use(cors());
-app.use(express.json());
+app.use(cors()); // erlaubt Cross-Origin-Aufrufe
+app.use(express.json()); // parsed JSON-Body in req.body
 
 // API-Routes
-app.use('/api/documents', documentsRouter);
+// Dokumente öffentlich
+app.use("/api/documents", documentsRouter);
 
-app.use('/api/users', usersRouter); //Offen
+// User-Routen öffentlich (Registrierung/Anmeldung)
+app.use("/api/users", usersRouter); //Offen
 
-app.use('/api/vehicles',authMiddleware , vehiclesRouter); //Geschützte Routen
-app.use('/api/maintenances', authMiddleware , maintenancesRouter); //Geschützte Routen
+// Fahrzeuge und Wartungen nur mit gültigem JWT erreichbar
+app.use("/api/vehicles", authMiddleware, vehiclesRouter); // authMiddleware = 1. Arg, vehiclesRouter = 2. Arg
+app.use("/api/maintenances", authMiddleware, maintenancesRouter); // gleiche Schutzkette
 
-
-// Test Route
-app.get('/', (req, res) => {
-  res.json({ 
-    message: 'Fahrzeug-Wartungsbuch API',
-    status: 'running'
+// Test Route: einfacher Status-Check
+app.get("/", (req, res) => {
+  res.json({
+    message: "Fahrzeug-Wartungsbuch API",
+    status: "running",
   });
 });
 
-// Health Check
-app.get('/api/health', (req, res) => {
-  res.json({ 
-    status: 'ok',
-    database: process.env.DATABASE_URL ? 'configured' : 'not configured'
+// Health Check: liefert Basiszustand und DB-Konfig-Info
+app.get("/api/health", (req, res) => {
+  res.json({
+    status: "ok",
+    database: process.env.DATABASE_URL ? "configured" : "not configured",
   });
 });
 
+// Startet den HTTP-Server
 app.listen(PORT, () => {
   console.log(`Server läuft auf http://localhost:${PORT}`);
 });
