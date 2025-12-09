@@ -8,6 +8,8 @@ const documentsRouter = require('./routes/documents');
 const vehiclesRouter = require('./routes/vehicles');
 const usersRouter = require('./routes/users'); 
 const maintenancesRouter = require('./routes/maintenances'); 
+const authMiddleware = require("./middleware/authMiddleware");
+
 
 
 const app = express();
@@ -19,13 +21,11 @@ app.use(express.json());
 
 // API-Routes
 app.use('/api/documents', documentsRouter);
-app.use('/api/vehicles', vehiclesRouter);
 
-app.use('/api/users', usersRouter);
-app.use('/api/maintenances', maintenancesRouter);
+app.use('/api/users', usersRouter); //Offen
 
-
-
+app.use('/api/vehicles',authMiddleware , vehiclesRouter); //Geschützte Routen
+app.use('/api/maintenances', authMiddleware , maintenancesRouter); //Geschützte Routen
 
 
 // Test Route

@@ -27,7 +27,7 @@ router.post("/", async (req, res) => {
     const body = req.body;
 
     const newVehicle = {
-      userId: body.userId,
+      userId: req.user.id, // Aus Token
       type: body.type,
       brand: body.brand,
       model: body.model,
@@ -55,7 +55,7 @@ router.post("/", async (req, res) => {
 
 router.get("/", async (req, res) => {
   try {
-    const allVehicles = await db.select().from(vehicles);
+    const allVehicles = await db.select().from(vehicles).where(eq(vehicles.userId, req.user.id)); //Nur eigene Autos sichtbar
     res.json(allVehicles);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -67,15 +67,24 @@ router.get("/", async (req, res) => {
 router.get("/:id", async (req, res) => {
   try {
     const id = Number(req.params.id);
-    const vehicle = await db.select().from(vehicles).where(eq(vehicles.id, id));
-    if (vehicle.length === 0) {
-      return res.status(404).json({ error: "Fahrzeug nicht gefunden" });
+    const result = await db
+      .select()
+      .from(vehicles)
+      .where(eq(vehicles.id, id));
+
+    const vehicle = result[0];
+    if (!vehicle) return res.status(404).json({ error: "Fahrzeug nicht gefunden" });
+
+    if (vehicle.userId !== req.user.id) {
+      return res.status(403).json({ error: "Keine Berechtigung" });
     }
-    res.json(vehicle[0]);
+
+    res.json(vehicle);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
+
 
 // Get Vehicles by User ID
 
@@ -97,17 +106,24 @@ router.get("/user/:userId", async (req, res) => {
 router.put("/:id", async (req, res) => {
   try {
     const id = Number(req.params.id);
-    const data = req.body; // z.B. { brand: "VW", mileage: 120000 }
 
+    const existing = await db
+      .select()
+      .from(vehicles)
+      .where(eq(vehicles.id, id));
+
+    const vehicle = existing[0];
+    if (!vehicle) return res.status(404).json({ error: "Fahrzeug nicht gefunden" });
+    if (vehicle.userId !== req.user.id) {
+      return res.status(403).json({ error: "Keine Berechtigung" });
+    }
+
+    const data = req.body;
     const updated = await db
       .update(vehicles)
       .set(data)
       .where(eq(vehicles.id, id))
       .returning();
-
-    if (updated.length === 0) {
-      return res.status(404).json({ error: "Fahrzeug nicht gefunden" });
-    }
 
     res.json(updated[0]);
   } catch (err) {
@@ -121,15 +137,18 @@ router.delete("/:id", async (req, res) => {
   try {
     const id = Number(req.params.id);
 
-    const deleted = await db
-      .delete(vehicles)
-      .where(eq(vehicles.id, id))
-      .returning();
+    const existing = await db
+      .select()
+      .from(vehicles)
+      .where(eq(vehicles.id, id));
 
-    if (deleted.length === 0) {
-      return res.status(404).json({ error: "Fahrzeug nicht gefunden" });
+    const vehicle = existing[0];
+    if (!vehicle) return res.status(404).json({ error: "Fahrzeug nicht gefunden" });
+    if (vehicle.userId !== req.user.id) {
+      return res.status(403).json({ error: "Keine Berechtigung" });
     }
 
+    await db.delete(vehicles).where(eq(vehicles.id, id));
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: err.message });
