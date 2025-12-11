@@ -11,7 +11,9 @@ router.post("/", async (req, res) => {
   // req.user.id kommt aus authMiddleware, req.body: Fahrzeuginfos
   try {
     const body = req.body;
-
+    if(!body.type || !body.brand || !body.model || !body.mileage || !body.licensePlate) {
+      return res.status(400).json({ error: "Pflichtfelder müssen ausgefüllt werden." });
+    }
     const newVehicle = {
       userId: req.user.id, // Aus Token
       type: body.type,
@@ -32,8 +34,8 @@ router.post("/", async (req, res) => {
 
     res.status(201).json(inserted[0]);
   } catch (error) {
-    console.error("INSERT ERROR FULL:", error);
-    res.status(500).json({ error: error.message });
+    console.error("CREATE VEHICLE ERROR:", error);
+    res.status(500).json({ error: "Interner Serverfehler" });
   }
 });
 

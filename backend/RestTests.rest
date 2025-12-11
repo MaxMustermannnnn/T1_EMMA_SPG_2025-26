@@ -1,0 +1,15 @@
+
+POST http://localhost:5000/api/vehicles
+Content-Type: application/json
+
+{
+  "type": "PKW",
+  "brand": "VW",
+  "model": "Golf",
+  "licensePlate": "AB-123CD",
+  "vin": "WVWZZZ1JZXW000000",
+  "mileage": 12345,
+  "color": "Rot",
+  "purchaseDate": "2023-01-01",
+  "notes": "Mein erstes Auto"
+}

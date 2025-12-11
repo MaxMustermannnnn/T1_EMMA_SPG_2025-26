@@ -41,6 +41,9 @@ router.post("/", async (req, res) => {
   // req.body enthält Pflichtfelder (vehicleId, date, type, category) plus optionale Felder
   try {
     const body = req.body;
+
+    
+
     const newMaintenance = {
       vehicleId: body.vehicleId,
       date: body.date,

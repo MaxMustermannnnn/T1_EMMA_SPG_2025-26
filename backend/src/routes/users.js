@@ -1,4 +1,4 @@
-const express = require("express");
+const express = require("express"); // Express-Framework
 const router = express.Router(); // Subrouter für /api/users
 const bcrypt = require("bcrypt"); // Passwort-Hashing
 const jwt = require("jsonwebtoken"); // JWT-Erzeugung/Prüfung
@@ -6,16 +6,29 @@ const jwt = require("jsonwebtoken"); // JWT-Erzeugung/Prüfung
 // Datenbank & Table-Model
 const db = require("../db/db"); // Drizzle DB-Client
 const { users } = require("../db/schema.js"); // Users-Tabelle
-const { eq } = require("drizzle-orm"); // Vergleichsoperator für WHERE
+const { eq } = require("drizzle-orm"); // Vergleichsoperator für WHERE (DRIZZLE)
 
 const authMiddleware = require("../middleware/authMiddleware"); // prüft JWT und setzt req.user
 
 //Create User
+
 // Erstellt einen neuen Nutzer: Passwort wird gehasht, in DB gespeichert, Rückgabe ohne Passwort
 router.post("/", async (req, res) => {
   // req.body: { email, password, username, first_name, last_name }
   try {
     const body = req.body;
+
+    if (
+      !body.email ||
+      !body.passsword ||
+      !body.username ||
+      !body.first_name ||
+      !body.last_name
+    ) {
+      return res
+        .status(400)
+        .json({ error: "Alle Felder müssen ausgefüllt werden." });
+    }
 
     // Passwort hashen
     const saltRounds = 10;
@@ -35,8 +48,8 @@ router.post("/", async (req, res) => {
     const { password, ...safeUser } = inserted[0];
     res.status(201).json(safeUser);
   } catch (error) {
-    console.error("INSERT ERROR FULL:", error);
-    res.status(500).json({ error: error.message });
+    console.error("CREATE USER ERROR:", error);
+    res.status(500).json({ error: "Interner Serverfehler" });
   }
 });
 
@@ -130,6 +143,11 @@ router.post("/login", async (req, res) => {
   // req.body: { email, password }, Rückgabe: { token }
   try {
     const { email, password } = req.body;
+    if (!email || !password) {
+      return res
+        .status(400)
+        .json({ error: "Email und Passwort sind Pflichtfelder" });
+    }
     const result = await db.select().from(users).where(eq(users.email, email));
     const user = result[0];
 
