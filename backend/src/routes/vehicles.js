@@ -11,8 +11,16 @@ router.post("/", async (req, res) => {
   // req.user.id kommt aus authMiddleware, req.body: Fahrzeuginfos
   try {
     const body = req.body;
-    if(!body.type || !body.brand || !body.model || !body.mileage || !body.licensePlate) {
-      return res.status(400).json({ error: "Pflichtfelder müssen ausgefüllt werden." });
+    if (
+      !body.type ||
+      !body.brand ||
+      !body.model ||
+      !body.mileage ||
+      !body.licensePlate
+    ) {
+      return res
+        .status(400)
+        .json({ error: "Pflichtfelder müssen ausgefüllt werden." });
     }
     const newVehicle = {
       userId: req.user.id, // Aus Token

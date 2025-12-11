@@ -42,8 +42,6 @@ router.post("/", async (req, res) => {
   try {
     const body = req.body;
 
-    
-
     const newMaintenance = {
       vehicleId: body.vehicleId,
       date: body.date,

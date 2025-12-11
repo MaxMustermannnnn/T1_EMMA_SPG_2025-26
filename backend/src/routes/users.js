@@ -20,7 +20,7 @@ router.post("/", async (req, res) => {
 
     if (
       !body.email ||
-      !body.passsword ||
+      !body.password ||
       !body.username ||
       !body.first_name ||
       !body.last_name
