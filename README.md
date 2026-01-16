@@ -1,5 +1,10 @@
 # T1_EMMA_SPG_2025-26
 
+Benutzername: LogintestUser
+Emai: logintest@test.com
+Passwort: test
+
+
 🚗 Fahrzeug-Wartungsbuch - Setup-Anleitung für Team
 Willkommen im Team!
 
