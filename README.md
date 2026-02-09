@@ -4,6 +4,10 @@ Benutzername: LogintestUser
 Emai: logintest@test.com
 Passwort: test
 
+Max Mustermann MusterMax
+Mmustermann@gmail.com
+Passwort
+
 
 🚗 Fahrzeug-Wartungsbuch - Setup-Anleitung für Team
 Willkommen im Team!

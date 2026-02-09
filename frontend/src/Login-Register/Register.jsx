@@ -1,7 +1,9 @@
 import { useState } from "react";
 
 export default function Register({ onRegistered, switchToLogin }) {
-  const [name, setName] = useState("");
+  const [first_name, setFirstName] = useState("");
+  const [last_name, setLastName] = useState("");
+  const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -11,10 +13,10 @@ export default function Register({ onRegistered, switchToLogin }) {
     setError("");
 
     try {
-      const response = await fetch("http://localhost:5000/api/users/register", {
+      const response = await fetch("http://localhost:5000/api/users", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, password }),
+        body: JSON.stringify({ first_name, last_name, email, password, username }),
       });
 
       const data = await response.json();
@@ -42,12 +44,34 @@ export default function Register({ onRegistered, switchToLogin }) {
 
         <form onSubmit={handleSubmit} className="login-form">
           <div className="form-group">
-            <label htmlFor="name">Name</label>
+            <label htmlFor="first_name">Vorname</label>
             <input
-              id="name"
+              id="first_name"
               type="text"
-              value={name}
-              onChange={e => setName(e.target.value)}
+              value={first_name}
+              onChange={e => setFirstName(e.target.value)}
+              required
+            />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="last_name">Nachname</label>
+            <input
+              id="last_name"
+              type="text"
+              value={last_name}
+              onChange={e => setLastName(e.target.value)}
+              required
+            />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="username">Username</label>
+            <input
+              id="username"
+              type="text"
+              value={username}
+              onChange={e => setUsername(e.target.value)}
               required
             />
           </div>
