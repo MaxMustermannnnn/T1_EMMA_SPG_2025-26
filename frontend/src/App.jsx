@@ -40,9 +40,7 @@ function App() {
   };
 
   return (
-    <Layout user={user} onLogout={handleLogout}>
-      <Dashboard />
-    </Layout>
+    <Dashboard onLogout={handleLogout} />
   );
 }
 

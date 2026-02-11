@@ -1,5 +1,3 @@
-import Sidebar from "./Sidebar";
-
 export default function Layout({ children, onLogout, user }) {
   return (
     <div className="app-layout">
@@ -11,7 +9,8 @@ export default function Layout({ children, onLogout, user }) {
             Logout
           </button>
         </header>
-        {children}
+        {/* children bekommt onLogout als Prop */}
+        {React.cloneElement(children, { onLogout })}
       </main>
     </div>
   );

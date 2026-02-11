@@ -1,101 +1,50 @@
 export default function Dashboard() {
   return (
-    <div className="dashboard">
-      <section className="dashboard-header">
-        <h2>Willkommen zurück!</h2>
-        <p>
-          Hier ist eine Übersicht über Ihre Fahrzeuge und anstehende Termine.
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-6 md:p-8">
+      {/* Header */}
+      <section className="text-center mb-12">
+        <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-4">
+          Fahrzeug-Wartungsbuch
+        </h1>
+        <p className="text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed">
+          Übersicht über Ihre Fahrzeuge und anstehenden Wartungstermine.
         </p>
+
+        <button
+        onClick={onLogout}
+        className="bg-red-500 hover:bg-red-600 text-white px-6 py-2 rounded-xl font-semibold transition-all duration-200">
+        Abmelden
+      </button>
+
       </section>
 
-      <section className="top-cards">
-        <div className="card">
-          <div className="card-title">Fahrzeuge</div>
-          <div className="card-value">5</div>
-          <div className="card-sub">Registrierte Fahrzeuge</div>
-        </div>
-        <div className="card">
-          <div className="card-title">Anstehende Termine</div>
-          <div className="card-value">1</div>
-          <div className="card-sub">In den nächsten Wochen</div>
-        </div>
-        <div className="card">
-          <div className="card-title">Dringend</div>
-          <div className="card-value">0</div>
-          <div className="card-sub">Nächste 7 Tage</div>
-        </div>
-        <div className="card">
-          <div className="card-title">Überfällig</div>
-          <div className="card-value">9</div>
-          <div className="card-sub">Verpasste Termine</div>
-        </div>
-      </section>
-
-      <section className="main-grid">
-        <div className="panel">
-          <div className="panel-header">
-            <h3>Meine Fahrzeuge</h3>
-            <span className="panel-sub">
-              Ihre registrierten Fahrzeuge im Überblick
-            </span>
+      {/* Stat Cards */}
+      <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+        <div className="group bg-white p-8 rounded-3xl shadow-lg hover:shadow-2xl transition-all duration-300 border border-gray-100 hover:border-blue-200">
+          <div className="flex items-center mb-3">
+            <div className="w-12 h-12 bg-blue-100 rounded-2xl flex items-center justify-center mr-4">
+              <svg className="w-6 h-6 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M2 6a2 2 0 012-2h5l2 2h5a2 2 0 012 2v6a2 2 0 01-2 2H4a2 2 0 01-2-2V6z"/>
+              </svg>
+            </div>
+            <div className="text-3xl font-bold text-gray-900">5</div>
           </div>
-
-          <div className="vehicle-list">
-            <div className="vehicle-item">
-              <div className="vehicle-icon">🚗</div>
-              <div className="vehicle-main">
-                <div className="vehicle-name">BMW 3er</div>
-                <div className="vehicle-plate">B-MK 1234</div>
-              </div>
-              <div className="vehicle-km">45 000 km</div>
-            </div>
-
-            <div className="vehicle-item">
-              <div className="vehicle-icon">🚗</div>
-              <div className="vehicle-main">
-                <div className="vehicle-name">Audi A4</div>
-                <div className="vehicle-plate">M-AB 5678</div>
-              </div>
-              <div className="vehicle-km">62 000 km</div>
-            </div>
-
-            <div className="vehicle-item">
-              <div className="vehicle-icon">🚗</div>
-              <div className="vehicle-main">
-                <div className="vehicle-name">Mercedes-Benz C-Klasse</div>
-                <div className="vehicle-plate">HH-CD 9012</div>
-              </div>
-              <div className="vehicle-km">28 000 km</div>
-            </div>
-          </div>
-
-          <button className="panel-footer-button">
-            Alle Fahrzeuge anzeigen
-          </button>
+          <div className="text-sm font-medium text-gray-600">Fahrzeuge</div>
+          <div className="text-xs text-gray-500">Aktiv registriert</div>
         </div>
 
-        <div className="panel">
-          <div className="panel-header">
-            <h3>Anstehende Termine</h3>
-            <span className="panel-sub">
-              Ihre nächsten Termine im Überblick
-            </span>
-          </div>
-
-          <div className="appointment-card">
-            <div className="appointment-header">
-              <span className="appointment-title">
-                Hauptuntersuchung (TÜV)
-              </span>
-              <span className="badge badge-danger">TÜV</span>
+        <div className="group bg-white p-8 rounded-3xl shadow-lg hover:shadow-2xl transition-all duration-300 border border-gray-100 hover:border-orange-200">
+          <div className="flex items-center mb-3">
+            <div className="w-12 h-12 bg-orange-100 rounded-2xl flex items-center justify-center mr-4">
+              <svg className="w-6 h-6 text-orange-600" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
             </div>
-            <div className="appointment-sub">
-              Mercedes-Benz C-Klasse • HH-CD 9012
-            </div>
-            <div className="appointment-date">15. März 2026</div>
+            <div className="text-3xl font-bold text-gray-900">1</div>
           </div>
-
-          <button className="panel-footer-button">Zum Kalender</button>
+          <div className="text-sm font-medium text-gray-600">Anstehende Wartungen</div>
+          
+          <div className="text-xs text-gray-500">In den nächsten 30 Tagen</div>
         </div>
       </section>
     </div>
