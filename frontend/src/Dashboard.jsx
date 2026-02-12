@@ -1,4 +1,12 @@
+import { useNavigate } from "react-router-dom";
+
 export default function Dashboard({ onLogout }) {
+  const navigate = useNavigate();
+
+  const goToProfile = () => {
+    navigate("/profile");
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-6 md:p-8">
       {/* Header */}
@@ -10,12 +18,19 @@ export default function Dashboard({ onLogout }) {
           Übersicht über Ihre Fahrzeuge und anstehenden Wartungstermine.
         </p>
 
-        <button
-        onClick={onLogout}
-        className="bg-red-500 hover:bg-red-600 text-white px-6 py-2 rounded-xl font-semibold transition-all duration-200">
-        Abmelden
-      </button>
+        <div className="mt-6 flex justify-center space-x-4">
+          <button
+            onClick={onLogout}
+            className="bg-red-500 hover:bg-red-600 text-white px-6 py-2 rounded-xl font-semibold transition-all duration-200">
+            Abmelden
+          </button>
 
+          <button
+            onClick={goToProfile}
+            className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-xl font-semibold transition-all duration-200">
+            Profil
+          </button>
+        </div>
       </section>
 
       {/* Stat Cards */}
@@ -43,7 +58,6 @@ export default function Dashboard({ onLogout }) {
             <div className="text-3xl font-bold text-gray-900">1</div>
           </div>
           <div className="text-sm font-medium text-gray-600">Anstehende Wartungen</div>
-          
           <div className="text-xs text-gray-500">In den nächsten 30 Tagen</div>
         </div>
       </section>

@@ -1,39 +1,44 @@
 import { useState } from "react";
+import { useNavigate, useLocation, Routes, Route } from "react-router-dom";
 import Login from "./Login-Register/Login";
 import Register from "./Login-Register/Register";
-import Layout from "./Layout";
 import Dashboard from "./Dashboard";
+import Profile from "./Profile";
 
 function App() {
+  const navigate = useNavigate();
+  const location = useLocation();
+  
   const [user, setUser] = useState(() => ({
     token: localStorage.getItem("token"),
     name: localStorage.getItem("userName"),
     email: localStorage.getItem("userEmail"),
   }));
 
-  const [authMode, setAuthMode] = useState("login"); // "login" | "register"
-
-  const authBypass =
-    import.meta.env.VITE_AUTH_BYPASS === "true" ||
-    localStorage.getItem("authBypass") === "true";
-
+  const [authMode, setAuthMode] = useState("login");
+  const authBypass = import.meta.env.VITE_AUTH_BYPASS === "true" || localStorage.getItem("authBypass") === "true";
   const effectiveToken = authBypass ? "dev-token" : user.token;
 
+  // Wenn nicht angemeldet, nur Login/Register zeigen
   if (!effectiveToken) {
-    if (authMode === "register") {
-      return (
-        <Register
-          onRegistered={() => {}}
-          switchToLogin={() => setAuthMode("login")}
-        />
-      );
-    }
-
     return (
-      <Login
-        onLogin={token => setUser({ token, name: null, email: null })}
-        switchToRegister={() => setAuthMode("register")}
-      />
+      <Routes>
+        <Route path="/register" element={
+          <Register
+            onRegistered={() => {}}
+            switchToLogin={() => setAuthMode("login")}
+          />
+        } />
+        <Route path="*" element={
+          <Login
+            onLogin={token => setUser({ token, name: null, email: null })}
+            switchToRegister={() => {
+              setAuthMode("register");
+              navigate("/register");
+            }}
+          />
+        } />
+      </Routes>
     );
   }
 
@@ -43,9 +48,17 @@ function App() {
     localStorage.removeItem("userEmail");
     setUser({ token: null, name: null, email: null });
     setAuthMode("login");
+    navigate("/login");
   };
 
-  return <Dashboard onLogout={handleLogout} />;
+  // Wenn angemeldet, zeige die Routes
+  return (
+    <Routes>
+      <Route path="/dashboard" element={<Dashboard onLogout={handleLogout} />} />
+      <Route path="/profile" element={<Profile />} />
+      <Route path="*" element={<Dashboard onLogout={handleLogout} />} />
+    </Routes>
+  );
 }
 
 export default App;
