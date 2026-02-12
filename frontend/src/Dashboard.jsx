@@ -1,4 +1,4 @@
-export default function Dashboard() {
+export default function Dashboard({ onLogout }) {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-6 md:p-8">
       {/* Header */}
