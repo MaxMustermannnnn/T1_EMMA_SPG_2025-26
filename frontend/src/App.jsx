@@ -4,6 +4,7 @@ import Login from "./Login-Register/Login";
 import Register from "./Login-Register/Register";
 import Dashboard from "./Dashboard";
 import Profile from "./Profile";
+import Calendar from "./Calendar";
 
 function App() {
   const navigate = useNavigate();
@@ -56,6 +57,7 @@ function App() {
     <Routes>
       <Route path="/dashboard" element={<Dashboard onLogout={handleLogout} />} />
       <Route path="/profile" element={<Profile />} />
+      <Route path="/calendar" element={<Calendar />} />
       <Route path="*" element={<Dashboard onLogout={handleLogout} />} />
     </Routes>
   );
