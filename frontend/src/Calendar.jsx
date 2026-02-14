@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 
 function buildDateKey(dateString) {
@@ -7,6 +8,7 @@ function buildDateKey(dateString) {
 }
 
 export default function Calendar() {
+  const navigate = useNavigate();
   const [currentDate, setCurrentDate] = useState(() => new Date(2026, 2, 1));
   const [vehicles, setVehicles] = useState([]);
   const [maintenances, setMaintenances] = useState([]);
@@ -201,16 +203,25 @@ export default function Calendar() {
       <div className="mx-auto max-w-6xl">
         <header className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-slate-900">Wartungskalender</h1>
-            <p className="text-sm text-slate-500">Deine Termine aus dem Backend</p>
+            <h1 className="text-4xl md:text-5xl font-bold leading-[1.25] pb-2 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2">Wartungskalender</h1>
+            <p className="text-sm text-slate-500">Deine Termine auf einem Blick</p>
           </div>
-          <button
-            type="button"
-            className="inline-flex items-center justify-center rounded-full bg-indigo-600 px-5 py-2 text-sm font-semibold text-white shadow-lg shadow-indigo-200 transition hover:bg-indigo-500"
-            onClick={() => setShowForm((prev) => !prev)}
-          >
-            {showForm ? "Formular schließen" : "Termin hinzufügen"}
-          </button>
+          <div className="flex flex-wrap items-center gap-3">
+            <button
+              type="button"
+              className="inline-flex items-center justify-center rounded-full border-2 border-slate-300 bg-white px-5 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50"
+              onClick={() => navigate("/dashboard")}
+            >
+              Zurück zum Dashboard
+            </button>
+            <button
+              type="button"
+              className="inline-flex items-center justify-center rounded-full bg-indigo-600 px-5 py-2 text-sm font-semibold text-white shadow-lg shadow-indigo-200 transition hover:bg-indigo-500"
+              onClick={() => setShowForm((prev) => !prev)}
+            >
+              {showForm ? "Formular schließen" : "Termin hinzufügen"}
+            </button>
+          </div>
         </header>
 
         {error && (
@@ -308,7 +319,7 @@ export default function Calendar() {
           <div className="flex items-center justify-between">
             <button
               type="button"
-              className="rounded-full border border-slate-200 px-3 py-1 text-sm text-slate-600 hover:bg-slate-50"
+              className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white bg-transparent text-lg font-semibold text-black shadow-lg shadow-slate-200 transition hover:bg-slate-50"
               onClick={() => handleMonthChange(-1)}
             >
               ←
@@ -321,7 +332,7 @@ export default function Calendar() {
             </h3>
             <button
               type="button"
-              className="rounded-full border border-slate-200 px-3 py-1 text-sm text-slate-600 hover:bg-slate-50"
+              className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white bg-transparent text-lg font-semibold text-black shadow-lg shadow-slate-200 transition hover:bg-slate-50"
               onClick={() => handleMonthChange(1)}
             >
               →

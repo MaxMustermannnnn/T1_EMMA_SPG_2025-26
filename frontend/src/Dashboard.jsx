@@ -7,11 +7,15 @@ export default function Dashboard({ onLogout }) {
     navigate("/profile");
   };
 
+  const goToCalendar = () => {
+    navigate("/calendar");
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-6 md:p-8">
       {/* Header */}
       <section className="text-center mb-12">
-        <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-4">
+        <h1 className="text-4xl md:text-5xl font-bold leading-[1.25] pb-2 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2">
           Fahrzeug-Wartungsbuch
         </h1>
         <p className="text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed">
@@ -29,6 +33,12 @@ export default function Dashboard({ onLogout }) {
             onClick={goToProfile}
             className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-xl font-semibold transition-all duration-200">
             Profil
+          </button>
+
+          <button
+            onClick={goToCalendar}
+            className="bg-slate-900 hover:bg-slate-800 text-white px-6 py-2 rounded-xl font-semibold transition-all duration-200">
+            Kalender
           </button>
         </div>
       </section>
