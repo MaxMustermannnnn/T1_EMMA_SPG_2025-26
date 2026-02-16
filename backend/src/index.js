@@ -2,11 +2,12 @@ const express = require("express"); // Express-App für HTTP-Server
 const cors = require("cors"); // CORS-Header erlauben Frontend-Zugriff
 require("dotenv").config(); // Lädt .env (PORT, JWT_SECRET, DB-URL)
 
-// Route-Module (Dokumente, Fahrzeuge, Nutzer, Wartungen)
+// Route-Module (Dokumente, Fahrzeuge, Nutzer, Wartungen, Vorschläge)
 const documentsRouter = require("./routes/documents");
 const vehiclesRouter = require("./routes/vehicles");
 const usersRouter = require("./routes/users");
 const maintenancesRouter = require("./routes/maintenances");
+const suggestionsRouter = require("./routes/suggestions");
 const authMiddleware = require("./middleware/authMiddleware"); // prüft JWT
 
 const app = express();
@@ -22,6 +23,9 @@ app.use("/api/documents", documentsRouter);
 
 // User-Routen öffentlich (Registrierung/Anmeldung)
 app.use("/api/users", usersRouter); //Offen
+
+// Vorschläge öffentlich (für Autocomplete)
+app.use("/api/suggestions", suggestionsRouter);
 
 // Fahrzeuge und Wartungen nur mit gültigem JWT erreichbar
 app.use("/api/vehicles", authMiddleware, vehiclesRouter); // authMiddleware = 1. Arg, vehiclesRouter = 2. Arg

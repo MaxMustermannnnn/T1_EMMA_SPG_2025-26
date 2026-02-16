@@ -29,10 +29,30 @@ export default function Fahrzeuguebersicht() {
 		notes: "",
 		bildurl: "",
 	});
+	
+	// State für Autocomplete Vorschläge
+	const [brandSuggestions, setBrandSuggestions] = useState([]);
+	const [modelSuggestions, setModelSuggestions] = useState([]);
+	const [showBrandDropdown, setShowBrandDropdown] = useState(false);
+	const [showModelDropdown, setShowModelDropdown] = useState(false);
 
 	const token = localStorage.getItem("token");
 
 	const vehicleCount = useMemo(() => vehicles.length, [vehicles.length]);
+
+	useEffect(() => {
+		// Load all brands on component mount
+		const loadBrands = async () => {
+			try {
+				const response = await fetch(`${API_BASE}/api/suggestions/brands?type=${formData.type || "PKW"}`);
+				const data = await response.json();
+				setBrandSuggestions(data || []);
+			} catch (err) {
+				console.error("Error loading brands:", err);
+			}
+		};
+		loadBrands();
+	}, [formData.type]);
 
 	useEffect(() => {
 		if (!token) {
@@ -65,7 +85,67 @@ export default function Fahrzeuguebersicht() {
 
 	const handleInputChange = (event) => {
 		const { name, value } = event.target;
+		
+		// Reset brand and model when type changes
+		if (name === "type") {
+			setFormData((prev) => ({ ...prev, [name]: value, brand: "", model: "" }));
+			setBrandSuggestions([]);
+			setModelSuggestions([]);
+			setShowBrandDropdown(false);
+			setShowModelDropdown(false);
+			return;
+		}
+		
 		setFormData((prev) => ({ ...prev, [name]: value }));
+		
+		// Fetch model suggestions
+		if (name === "model" && formData.brand) {
+			if (value.length > 0) {
+				fetchModelSuggestions(formData.brand, value);
+				setShowModelDropdown(true);
+			} else {
+				fetchModelSuggestions(formData.brand, "");
+				setShowModelDropdown(true);
+			}
+		}
+	};
+
+	const fetchModelSuggestions = async (brand, search, type = formData.type) => {
+		try {
+			const response = await fetch(
+				`${API_BASE}/api/suggestions/models/${encodeURIComponent(brand)}?type=${encodeURIComponent(type || "PKW")}&search=${encodeURIComponent(search)}`
+			);
+			const data = await response.json();
+			setModelSuggestions(data || []);
+		} catch (err) {
+			console.error("Error fetching model suggestions:", err);
+			setModelSuggestions([]);
+		}
+	};
+
+	const filterBrandSuggestions = (search) => {
+		if (!search) return brandSuggestions;
+		return brandSuggestions.filter(brand =>
+			brand.toLowerCase().includes(search.toLowerCase())
+		);
+	};
+
+	const getFilteredBrands = () => {
+		return filterBrandSuggestions(formData.brand);
+	};
+
+	const handleBrandSelect = (brand) => {
+		setFormData((prev) => ({ ...prev, brand, model: "" }));
+		setShowBrandDropdown(false);
+		// Load models for the selected brand
+		fetchModelSuggestions(brand, "", formData.type);
+		setShowModelDropdown(true);
+	};
+
+	const handleModelSelect = (model) => {
+		setFormData((prev) => ({ ...prev, model }));
+		setShowModelDropdown(false);
+		setModelSuggestions([]);
 	};
 
 	const handleSubmit = async (event) => {
@@ -221,26 +301,79 @@ export default function Fahrzeuguebersicht() {
 
 						<label className="flex flex-col gap-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
 							Marke *
-							<input
-								type="text"
-								name="brand"
-								value={formData.brand}
-								onChange={handleInputChange}
-								className="rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-800"
-								required
-							/>
+							<div className="relative">
+								<input
+									type="text"
+									name="brand"
+									value={formData.brand}
+									onChange={handleInputChange}
+									onFocus={() => setShowBrandDropdown(true)}
+									onBlur={() => setTimeout(() => setShowBrandDropdown(false), 200)}
+									className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-800"
+									placeholder="Marke eingeben oder wählen..."
+									required
+									autoComplete="off"
+								/>
+								{showBrandDropdown && (
+									<div className="absolute top-full left-0 right-0 z-10 mt-1 max-h-60 overflow-y-auto rounded-lg border border-slate-200 bg-white shadow-lg">
+										{getFilteredBrands().length > 0 ? (
+											getFilteredBrands().map((brand) => (
+												<button
+													key={brand}
+													type="button"
+													onClick={() => handleBrandSelect(brand)}
+													className="w-full px-3 py-2 text-left text-sm text-slate-700 hover:bg-blue-50 hover:text-blue-600 transition"
+												>
+													{brand}
+												</button>
+											))
+										) : (
+											<div className="px-3 py-2 text-sm text-slate-400">
+												Keine Marke gefunden
+											</div>
+										)}
+									</div>
+								)}
+							</div>
 						</label>
 
 						<label className="flex flex-col gap-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
 							Modell *
-							<input
-								type="text"
-								name="model"
-								value={formData.model}
-								onChange={handleInputChange}
-								className="rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-800"
-								required
-							/>
+							<div className="relative">
+								<input
+									type="text"
+									name="model"
+									value={formData.model}
+									onChange={handleInputChange}
+									onFocus={() => formData.brand && setShowModelDropdown(true)}
+									onBlur={() => setTimeout(() => setShowModelDropdown(false), 200)}
+									className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-800 disabled:bg-slate-100 disabled:text-slate-400"
+									placeholder={formData.brand ? "Modell eingeben oder wählen..." : "Erst Marke wählen"}
+									required
+									disabled={!formData.brand}
+									autoComplete="off"
+								/>
+								{showModelDropdown && formData.brand && (
+									<div className="absolute top-full left-0 right-0 z-10 mt-1 max-h-60 overflow-y-auto rounded-lg border border-slate-200 bg-white shadow-lg">
+										{modelSuggestions.length > 0 ? (
+											modelSuggestions.map((model) => (
+												<button
+													key={model}
+													type="button"
+													onClick={() => handleModelSelect(model)}
+													className="w-full px-3 py-2 text-left text-sm text-slate-700 hover:bg-blue-50 hover:text-blue-600 transition"
+												>
+													{model}
+												</button>
+											))
+										) : (
+											<div className="px-3 py-2 text-sm text-slate-400">
+												Keine Modelle gefunden
+											</div>
+										)}
+									</div>
+								)}
+							</div>
 						</label>
 
 						<label className="flex flex-col gap-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
