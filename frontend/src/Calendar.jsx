@@ -44,9 +44,14 @@ export default function Calendar() {
       const vehicleLabel = vehicle
         ? `${vehicle.brand || ""} ${vehicle.model || ""} ${vehicle.licensePlate || ""}`.trim()
         : "Fahrzeug";
-      const title = `${item.type || "Wartung"} - ${vehicleLabel}`.trim();
       if (!map[key]) map[key] = [];
-      map[key].push(title);
+      map[key].push({
+        id: item.id,
+        type: item.type || "Wartung",
+        vehicleLabel,
+        category: item.category,
+        description: item.description,
+      });
     }
     return map;
   }, [maintenances, vehicleById]);
@@ -98,6 +103,30 @@ export default function Calendar() {
     }
   };
 
+  const deleteMaintenance = async (id) => {
+    if (!window.confirm("Möchtest du diesen Termin wirklich löschen?")) {
+      return;
+    }
+
+    setLoading(true);
+    setError("");
+    try {
+      const response = await fetch(`${API_BASE}/api/maintenances/${id}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || "Termin konnte nicht gelöscht werden");
+      }
+      await loadMaintenances(vehicles);
+    } catch (err) {
+      setError(err.message || "Termin konnte nicht gelöscht werden");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     if (vehicles.length > 0) {
       loadMaintenances(vehicles);
@@ -136,13 +165,24 @@ export default function Calendar() {
         <div className="text-xs font-semibold text-slate-500">{day}</div>
         {dayEvents.length > 0 && (
           <div className="mt-2 space-y-1">
-            {dayEvents.map((event, idx) => (
+            {dayEvents.map((event) => (
               <div
-                key={idx}
-                className="rounded-md bg-indigo-50 px-2 py-1 text-xs text-indigo-700"
-                title={event}
+                key={event.id}
+                className="rounded-md bg-indigo-50 px-2 py-1 text-xs text-indigo-700 group relative"
               >
-                {event}
+                <div className="pr-6">
+                  <div className="font-semibold">{event.type}</div>
+                  <div className="text-indigo-600 text-[10px]">{event.vehicleLabel}</div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => deleteMaintenance(event.id)}
+                  disabled={loading}
+                  className="absolute right-1 top-1 rounded px-1.5 py-0.5 bg-red-500/80 text-white text-[10px] font-semibold opacity-0 group-hover:opacity-100 transition hover:bg-red-600 disabled:opacity-50"
+                  title="Löschen"
+                >
+                  ✕
+                </button>
               </div>
             ))}
           </div>
