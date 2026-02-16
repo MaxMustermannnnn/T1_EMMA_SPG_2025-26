@@ -56,7 +56,7 @@ function App() {
   return (
     <Routes>
       <Route path="/dashboard" element={<Dashboard onLogout={handleLogout} />} />
-      <Route path="/profile" element={<Profile />} />
+      <Route path="/profile" element={<Profile onLogout={handleLogout} />} />
       <Route path="/calendar" element={<Calendar />} />
       <Route path="*" element={<Dashboard onLogout={handleLogout} />} />
     </Routes>
