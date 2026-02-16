@@ -19,8 +19,8 @@ function App() {
   const authBypass = import.meta.env.VITE_AUTH_BYPASS === "true" || localStorage.getItem("authBypass") === "true";
   const effectiveToken = authBypass ? "dev-token" : user.token;
 
-  // Wenn nicht angemeldet, nur Login/Register zeigen, neu mit dev für test
-  if (!effectiveToken && !devMode) {
+  // Wenn nicht angemeldet, nur Login/Register zeigen,
+  if (!effectiveToken) {
     return (
       <Routes>
         <Route path="/register" element={
