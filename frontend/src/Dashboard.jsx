@@ -7,6 +7,10 @@ export default function Dashboard({ onLogout }) {
     navigate("/profile");
   };
 
+  const goToVehicles = () => {
+    navigate("/fahrzeuge");
+  };
+
   const goToCalendar = () => {
     navigate("/calendar");
   };
@@ -33,6 +37,12 @@ export default function Dashboard({ onLogout }) {
             onClick={goToProfile}
             className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-xl font-semibold transition-all duration-200">
             Profil
+          </button>
+
+          <button
+            onClick={goToVehicles}
+            className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2 rounded-xl font-semibold transition-all duration-200">
+            Fahrzeuge
           </button>
 
           <button
