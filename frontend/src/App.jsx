@@ -3,6 +3,7 @@ import { useNavigate, useLocation, Routes, Route } from "react-router-dom";
 import Login from "./Login-Register/Login";
 import Register from "./Login-Register/Register";
 import Dashboard from "./Dashboard";
+import Fahrzeuguebersicht from "./Fahrzeuguebersicht";
 import Profile from "./Profile";
 import Calendar from "./Calendar";
 
@@ -27,7 +28,19 @@ function App() {
         <Route path="/register" element={
           <Register
             onRegistered={() => {}}
-            switchToLogin={() => setAuthMode("login")}
+            switchToLogin={() => {
+              setAuthMode("login");
+              navigate("/login");
+            }}
+          />
+        } />
+        <Route path="/login" element={
+          <Login
+            onLogin={token => setUser({ token, name: null, email: null })}
+            switchToRegister={() => {
+              setAuthMode("register");
+              navigate("/register");
+            }}
           />
         } />
         <Route path="*" element={
@@ -56,7 +69,8 @@ function App() {
   return (
     <Routes>
       <Route path="/dashboard" element={<Dashboard onLogout={handleLogout} />} />
-      <Route path="/profile" element={<Profile onLogout={handleLogout} />} />
+      <Route path="/profile" element={<Profile />} />
+      <Route path="/fahrzeuge" element={<Fahrzeuguebersicht />} />
       <Route path="/calendar" element={<Calendar />} />
       <Route path="*" element={<Dashboard onLogout={handleLogout} />} />
     </Routes>

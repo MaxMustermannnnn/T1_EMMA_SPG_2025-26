@@ -1,0 +1,132 @@
+{
+  "PKW": [
+    {
+      "name": "Audi",
+      "models": ["A1", "A3", "A4", "A6", "A8", "Q3", "Q5", "Q7", "Q8"]
+    },
+    {
+      "name": "BMW",
+      "models": ["1er", "3er", "5er", "7er", "X1", "X3", "X5", "X7", "Z4"]
+    },
+    {
+      "name": "Mercedes-Benz",
+      "models": ["A-Klasse", "C-Klasse", "E-Klasse", "S-Klasse", "GLA", "GLC", "GLE", "GLS"]
+    },
+    {
+      "name": "Volkswagen",
+      "models": ["Golf", "Passat", "Tiguan", "Touran", "Polo", "Jetta", "Up", "Beetle"]
+    },
+    {
+      "name": "Ford",
+      "models": ["Focus", "Mondeo", "Edge", "Explorer", "Mustang"]
+    },
+    {
+      "name": "Opel",
+      "models": ["Corsa", "Astra", "Insignia", "Grandland"]
+    },
+    {
+      "name": "Renault",
+      "models": ["Clio", "Megane", "Scenic", "Talisman", "Kadjar", "Koleos"]
+    },
+    {
+      "name": "Fiat",
+      "models": ["500", "Panda", "Tipo", "500X", "Punto"]
+    },
+    {
+      "name": "Toyota",
+      "models": ["Yaris", "Corolla", "Camry", "RAV4", "Prius"]
+    },
+    {
+      "name": "Honda",
+      "models": ["Jazz", "Civic", "Accord", "CR-V", "HR-V"]
+    },
+    {
+      "name": "Skoda",
+      "models": ["Citigo", "Fabia", "Octavia", "Superb", "Karoq", "Kodiaq"]
+    },
+    {
+      "name": "Mazda",
+      "models": ["MX-5", "2", "3", "6", "CX-30", "CX-5"]
+    },
+    {
+      "name": "Hyundai",
+      "models": ["i10", "i20", "i30", "i40", "Tucson", "Santa Fe", "Kona"]
+    },
+    {
+      "name": "Kia",
+      "models": ["Picanto", "Rio", "Ceed", "Sportage", "Sorento", "Niro"]
+    }
+  ],
+  "LKW": [
+    {
+      "name": "Volvo",
+      "models": ["FH", "FM", "FMX", "FL"]
+    },
+    {
+      "name": "Scania",
+      "models": ["R-Serie", "S-Serie", "P-Serie", "G-Serie"]
+    },
+    {
+      "name": "MAN",
+      "models": ["TGX", "TGM", "TGL", "TGA"]
+    },
+    {
+      "name": "Mercedes-Benz",
+      "models": ["Actros", "Antos", "Atego", "Sprinter"]
+    },
+    {
+      "name": "Renault",
+      "models": ["T-Serie", "C-Serie", "D-Serie", "Master"]
+    },
+    {
+      "name": "DAF",
+      "models": ["XF", "CF", "LF"]
+    },
+    {
+      "name": "Iveco",
+      "models": ["S-Way", "Stralis", "Eurocargo", "Daily"]
+    },
+    {
+      "name": "Fiat",
+      "models": ["Ducato", "Daily"]
+    },
+    {
+      "name": "Ford",
+      "models": ["Transit", "Transit Custom"]
+    }
+  ],
+  "Moped": [
+    {
+      "name": "Yamaha",
+      "models": ["YZF-R125", "YZF-R15", "YZF-R3", "MT-07", "MT-09", "XSR700"]
+    },
+    {
+      "name": "Honda",
+      "models": ["CB125R", "CB150R", "CB300R", "CB500F", "CB750"]
+    },
+    {
+      "name": "Kawasaki",
+      "models": ["Ninja 125", "Ninja 250", "Ninja 300", "Ninja 400"]
+    },
+    {
+      "name": "KTM",
+      "models": ["125 Duke", "390 Duke", "790 Duke", "1290 Super Duke"]
+    },
+    {
+      "name": "Suzuki",
+      "models": ["GSX-S125", "GSX-R125", "GSX-S750", "GSX-R750"]
+    },
+    {
+      "name": "BMW",
+      "models": ["G 310 R", "G 310 GS", "S 1000 RR", "F 900 XR"]
+    },
+    {
+      "name": "Harley-Davidson",
+      "models": ["Street 750", "Street 500", "Iron 883", "Fat Boy"]
+    },
+    {
+      "name": "Ducati",
+      "models": ["Monster", "Panigale V4", "Multistrada", "Scrambler"]
+    }
+  ]
+}
