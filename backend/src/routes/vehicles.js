@@ -3,7 +3,7 @@ const router = express.Router(); // Subrouter für /api/vehicles
 
 // Datenbank & Table-Model
 const db = require("../db/db"); // Drizzle Instanz
-const { vehicles } = require("../db/schema.js"); // Tabelle Fahrzeuge
+const { vehicles, maintenances } = require("../db/schema.js"); // Tabelle Fahrzeuge
 const { eq } = require("drizzle-orm"); // WHERE-Helfer
 
 // Create vehicle – legt Fahrzeug für eingeloggten Nutzer an, nutzt userId aus Token
@@ -146,9 +146,14 @@ router.delete("/:id", async (req, res) => {
       return res.status(403).json({ error: "Keine Berechtigung" });
     }
 
+    // Lösche zuerst alle verknüpften Wartungen
+    await db.delete(maintenances).where(eq(maintenances.vehicleId, id));
+    
+    // Dann lösche das Fahrzeug
     await db.delete(vehicles).where(eq(vehicles.id, id));
     res.json({ success: true });
   } catch (err) {
+    console.error("DELETE VEHICLE ERROR:", err);
     res.status(500).json({ error: err.message });
   }
 });

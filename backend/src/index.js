@@ -15,7 +15,7 @@ const PORT = process.env.PORT || 5000; // Fallback auf 5000, falls .env fehlt
 
 //  CORS und JSON-Middleware
 app.use(cors()); // erlaubt Cross-Origin-Aufrufe
-app.use(express.json()); // parsed JSON-Body in req.body
+app.use(express.json({ limit: "50mb" })); // parsed JSON-Body in req.body, erhöhtes Limit für Base64-Bilder
 
 // API-Routes
 // Dokumente öffentlich

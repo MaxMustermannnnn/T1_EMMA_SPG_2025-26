@@ -14,6 +14,8 @@ export default function Fahrzeuguebersicht() {
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState("");
 	const [showForm, setShowForm] = useState(false);
+	const [showEditForm, setShowEditForm] = useState(false);
+	const [editingId, setEditingId] = useState(null);
 	const [formError, setFormError] = useState("");
 	const [saving, setSaving] = useState(false);
 	const [deletingId, setDeletingId] = useState(null);
@@ -35,6 +37,7 @@ export default function Fahrzeuguebersicht() {
 	const [modelSuggestions, setModelSuggestions] = useState([]);
 	const [showBrandDropdown, setShowBrandDropdown] = useState(false);
 	const [showModelDropdown, setShowModelDropdown] = useState(false);
+	const [previewImage, setPreviewImage] = useState(null);
 
 	const token = localStorage.getItem("token");
 
@@ -108,6 +111,40 @@ export default function Fahrzeuguebersicht() {
 				setShowModelDropdown(true);
 			}
 		}
+	};
+
+	const handleImageUpload = (event) => {
+		const file = event.target.files?.[0];
+		if (!file) return;
+
+		// Check file size (max 2MB)
+		if (file.size > 2 * 1024 * 1024) {
+			setFormError("Bild ist zu groß. Maximale Größe: 2 MB");
+			return;
+		}
+
+		// Check file type
+		if (!file.type.startsWith("image/")) {
+			setFormError("Bitte wähle eine Bilddatei aus");
+			return;
+		}
+
+		const reader = new FileReader();
+		reader.onload = (e) => {
+			const base64String = e.target?.result;
+			setFormData((prev) => ({ ...prev, bildurl: base64String }));
+			setPreviewImage(base64String);
+			setFormError("");
+		};
+		reader.onerror = () => {
+			setFormError("Fehler beim Lesen der Datei");
+		};
+		reader.readAsDataURL(file);
+	};
+
+	const clearImage = () => {
+		setFormData((prev) => ({ ...prev, bildurl: "" }));
+		setPreviewImage(null);
 	};
 
 	const fetchModelSuggestions = async (brand, search, type = formData.type) => {
@@ -200,12 +237,114 @@ export default function Fahrzeuguebersicht() {
 				notes: "",
 				bildurl: "",
 			});
+			setPreviewImage(null);
 			setShowForm(false);
 		} catch (err) {
 			setFormError(err.message || "Fahrzeug konnte nicht gespeichert werden");
 		} finally {
 			setSaving(false);
 		}
+	};
+
+	const openEditForm = (vehicle) => {
+		setFormData({
+			type: vehicle.type || "",
+			brand: vehicle.brand || "",
+			model: vehicle.model || "",
+			licensePlate: vehicle.licensePlate || "",
+			vin: vehicle.vin || "",
+			mileage: vehicle.mileage || "",
+			color: vehicle.color || "",
+			purchaseDate: vehicle.purchaseDate || "",
+			notes: vehicle.notes || "",
+			bildurl: vehicle.bildurl || "",
+		});
+		setPreviewImage(vehicle.bildurl || null);
+		setEditingId(vehicle.id);
+		setShowEditForm(true);
+		setFormError("");
+	};
+
+	const handleSaveEdit = async (event) => {
+		event.preventDefault();
+		if (!token || !editingId) {
+			setFormError("Fehler beim Bearbeiten");
+			return;
+		}
+
+		if (!formData.type || !formData.brand || !formData.model || !formData.mileage || !formData.licensePlate) {
+			setFormError("Bitte alle Pflichtfelder ausfüllen.");
+			return;
+		}
+
+		setSaving(true);
+		setFormError("");
+		try {
+			const payload = {
+				type: formData.type,
+				brand: formData.brand,
+				model: formData.model,
+				licensePlate: formData.licensePlate,
+				mileage: Number(formData.mileage),
+				vin: formData.vin || null,
+				color: formData.color || null,
+				purchaseDate: formData.purchaseDate || null,
+				notes: formData.notes || null,
+				bildurl: formData.bildurl || null,
+			};
+
+			const response = await fetch(`${API_BASE}/api/vehicles/${editingId}`, {
+				method: "PUT",
+				headers: {
+					"Content-Type": "application/json",
+					Authorization: `Bearer ${token}`,
+				},
+				body: JSON.stringify(payload),
+			});
+			const data = await response.json();
+			if (!response.ok) {
+				throw new Error(data.error || "Fahrzeug konnte nicht gespeichert werden");
+			}
+			setVehicles((prev) => prev.map((v) => (v.id === editingId ? data : v)));
+			setShowEditForm(false);
+			setEditingId(null);
+			setFormData({
+				type: "",
+				brand: "",
+				model: "",
+				licensePlate: "",
+				vin: "",
+				mileage: "",
+				color: "",
+				purchaseDate: "",
+				notes: "",
+				bildurl: "",
+			});
+			setPreviewImage(null);
+		} catch (err) {
+			setFormError(err.message || "Fahrzeug konnte nicht gespeichert werden");
+		} finally {
+			setSaving(false);
+		}
+	};
+
+	const cancelEdit = () => {
+		setShowEditForm(false);
+		setEditingId(null);
+		setFormData({
+			type: "",
+			brand: "",
+			model: "",
+			licensePlate: "",
+			vin: "",
+			mileage: "",
+			color: "",
+			purchaseDate: "",
+			notes: "",
+			bildurl: "",
+		});
+		setPreviewImage(null);
+		setFormError("");
 	};
 
 	const handleDelete = async (vehicle) => {
@@ -436,15 +575,36 @@ export default function Fahrzeuguebersicht() {
 						</label>
 
 						<label className="flex flex-col gap-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
-							Bild URL
-							<input
-								type="url"
-								name="bildurl"
-								value={formData.bildurl}
-								onChange={handleInputChange}
-								className="rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-800"
-								placeholder="https://..."
-							/>
+							Bild
+							<div className="flex flex-col gap-3">
+								{previewImage ? (
+									<div className="relative h-32 w-32 overflow-hidden rounded-lg border-2 border-blue-300 bg-blue-50">
+										<img
+											src={previewImage}
+											alt="Preview"
+											className="h-full w-full object-cover"
+										/>
+										<button
+											type="button"
+											onClick={clearImage}
+											className="absolute top-1 right-1 rounded-full bg-red-500 text-white p-1 hover:bg-red-600 transition"
+										>
+											✕
+										</button>
+									</div>
+								) : (
+									<div className="h-32 w-full rounded-lg border-2 border-dashed border-slate-300 bg-slate-50 flex items-center justify-center">
+										<span className="text-xs text-slate-400">Kein Bild ausgewählt</span>
+									</div>
+								)}
+								<input
+									type="file"
+									accept="image/*"
+									onChange={handleImageUpload}
+									className="rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-800 file:mr-3 file:rounded-md file:border-0 file:bg-blue-500 file:px-3 file:py-2 file:text-sm file:text-white file:font-semibold file:cursor-pointer hover:file:bg-blue-600 transition"
+								/>
+								<p className="text-xs text-slate-400">Maximale Größe: 2 MB. Format: JPG, PNG, etc.</p>
+							</div>
 						</label>
 
 						<label className="flex flex-col gap-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
@@ -475,6 +635,195 @@ export default function Fahrzeuguebersicht() {
 							</button>
 						</div>
 					</form>
+				)}
+
+				{/* Edit Modal */}
+				{showEditForm && (
+					<div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 overflow-y-auto">
+						<form
+							onSubmit={handleSaveEdit}
+							className="bg-white rounded-2xl border border-slate-200 p-6 shadow-lg max-w-2xl w-full my-8"
+						>
+							<div className="flex justify-between items-center mb-6">
+								<h2 className="text-xl font-semibold text-slate-900">Fahrzeug bearbeiten</h2>
+								<button
+									type="button"
+									onClick={cancelEdit}
+									className="text-slate-500 hover:text-slate-700 text-2xl font-bold"
+								>
+									✕
+								</button>
+							</div>
+
+							<div className="grid gap-4">
+								<label className="flex flex-col gap-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
+									Typ *
+									<select
+										name="type"
+										value={formData.type}
+										onChange={handleInputChange}
+										className="rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-800"
+										required
+									>
+										<option value="">Bitte waehlen</option>
+										<option value="PKW">PKW</option>
+										<option value="LKW">LKW</option>
+										<option value="Moped">Moped</option>
+									</select>
+								</label>
+
+								<label className="flex flex-col gap-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
+									Marke *
+									<input
+										type="text"
+										name="brand"
+										value={formData.brand}
+										onChange={handleInputChange}
+										className="rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-800"
+										required
+									/>
+								</label>
+
+								<label className="flex flex-col gap-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
+									Modell *
+									<input
+										type="text"
+										name="model"
+										value={formData.model}
+										onChange={handleInputChange}
+										className="rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-800"
+										required
+									/>
+								</label>
+
+								<label className="flex flex-col gap-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
+									Kennzeichen *
+									<input
+										type="text"
+										name="licensePlate"
+										value={formData.licensePlate}
+										onChange={handleInputChange}
+										className="rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-800"
+										required
+									/>
+								</label>
+
+								<label className="flex flex-col gap-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
+									Kilometerstand *
+									<input
+										type="number"
+										name="mileage"
+										value={formData.mileage}
+										onChange={handleInputChange}
+										min="0"
+										className="rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-800"
+										required
+									/>
+								</label>
+
+								<label className="flex flex-col gap-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
+									VIN
+									<input
+										type="text"
+										name="vin"
+										value={formData.vin}
+										onChange={handleInputChange}
+										className="rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-800"
+									/>
+								</label>
+
+								<label className="flex flex-col gap-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
+									Farbe
+									<input
+										type="text"
+										name="color"
+										value={formData.color}
+										onChange={handleInputChange}
+										className="rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-800"
+									/>
+								</label>
+
+								<label className="flex flex-col gap-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
+									Kaufdatum
+									<input
+										type="date"
+										name="purchaseDate"
+										value={formData.purchaseDate}
+										onChange={handleInputChange}
+										className="rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-800"
+									/>
+								</label>
+
+								<label className="flex flex-col gap-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
+									Bild
+									<div className="flex flex-col gap-3">
+										{previewImage ? (
+											<div className="relative h-32 w-32 overflow-hidden rounded-lg border-2 border-blue-300 bg-blue-50">
+												<img
+													src={previewImage}
+													alt="Preview"
+													className="h-full w-full object-cover"
+												/>
+												<button
+													type="button"
+													onClick={clearImage}
+													className="absolute top-1 right-1 rounded-full bg-red-500 text-white p-1 hover:bg-red-600 transition"
+												>
+													✕
+												</button>
+											</div>
+										) : (
+											<div className="h-32 w-full rounded-lg border-2 border-dashed border-slate-300 bg-slate-50 flex items-center justify-center">
+												<span className="text-xs text-slate-400">Kein Bild ausgewählt</span>
+											</div>
+										)}
+										<input
+											type="file"
+											accept="image/*"
+											onChange={handleImageUpload}
+											className="rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-800 file:mr-3 file:rounded-md file:border-0 file:bg-blue-500 file:px-3 file:py-2 file:text-sm file:text-white file:font-semibold file:cursor-pointer hover:file:bg-blue-600 transition"
+										/>
+										<p className="text-xs text-slate-400">Maximale Größe: 2 MB. Format: JPG, PNG, etc.</p>
+									</div>
+								</label>
+
+								<label className="flex flex-col gap-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
+									Notizen
+									<input
+										type="text"
+										name="notes"
+										value={formData.notes}
+										onChange={handleInputChange}
+										className="rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-800"
+										placeholder="Optionale Notiz"
+									/>
+								</label>
+
+								{formError && (
+									<div className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+										{formError}
+									</div>
+								)}
+
+								<div className="flex gap-3">
+									<button
+										type="submit"
+										disabled={saving}
+										className="flex-1 rounded-full bg-slate-900 px-5 py-2 text-sm font-semibold text-white shadow-lg shadow-slate-200 transition hover:bg-slate-800 disabled:opacity-60"
+									>
+										{saving ? "Speichern..." : "Änderungen speichern"}
+									</button>
+									<button
+										type="button"
+										onClick={cancelEdit}
+										className="rounded-full border border-slate-300 bg-white px-5 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+									>
+										Abbrechen
+									</button>
+								</div>
+							</div>
+						</form>
+					</div>
 				)}
 
 				{loading ? (
@@ -520,14 +869,21 @@ export default function Fahrzeuguebersicht() {
 											<p className="mt-1 text-xs text-slate-400">VIN: {vehicle.vin}</p>
 										)}
 									</div>
-									<div>
+									<div className="flex gap-2">
+										<button
+											type="button"
+											className="inline-flex items-center justify-center rounded-full border border-blue-200 bg-blue-50 px-4 py-2 text-xs font-semibold text-blue-700 transition hover:bg-blue-100"
+											onClick={() => openEditForm(vehicle)}
+										>
+											✏️ Bearbeiten
+										</button>
 										<button
 											type="button"
 											className="inline-flex items-center justify-center rounded-full border border-rose-200 bg-rose-50 px-4 py-2 text-xs font-semibold text-rose-700 transition hover:bg-rose-100 disabled:opacity-60"
 											disabled={deletingId === vehicle.id}
 											onClick={() => handleDelete(vehicle)}
 										>
-											{deletingId === vehicle.id ? "Löschen..." : "Löschen"}
+											{deletingId === vehicle.id ? "Löschen..." : "🗑️ Löschen"}
 										</button>
 									</div>
 								</div>
