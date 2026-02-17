@@ -3,8 +3,34 @@ const router = express.Router(); // Subrouter für /api/maintenances
 
 // Datenbank & Table-Model
 const db = require("../db/db"); // Drizzle Instanz
-const { maintenances } = require("../db/schema.js"); // Tabelle Wartungen
-const { eq } = require("drizzle-orm"); // WHERE-Helfer
+const { maintenances, vehicles } = require("../db/schema.js"); // Tabelle Wartungen
+const { eq, and } = require("drizzle-orm"); // WHERE-Helfer
+
+// Get all maintenances for current user (filtered by their vehicles)
+router.get("/", async (req, res) => {
+  // req.user.id kommt aus authMiddleware
+  try {
+    const userVehicles = await db
+      .select()
+      .from(vehicles)
+      .where(eq(vehicles.userId, req.user.id));
+
+    const vehicleIds = userVehicles.map(v => v.id);
+
+    if (vehicleIds.length === 0) {
+      return res.json([]);
+    }
+
+    // Load all maintenances and filter in code
+    const allMaintenances = await db.select().from(maintenances);
+    const filtered = allMaintenances.filter(m => vehicleIds.includes(m.vehicleId));
+    
+    res.json(filtered);
+  } catch (error) {
+    console.error("GET ALL MAINTENANCES ERROR:", error);
+    res.status(500).json({ error: "Failed to fetch maintenances" });
+  }
+});
 
 // Get maintenance by ID – holt einen Wartungseintrag per Primärschlüssel
 router.get("/:id", async (req, res) => {
