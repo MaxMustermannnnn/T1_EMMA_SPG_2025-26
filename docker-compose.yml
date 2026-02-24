@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  frontend:
+    build: ./frontend
+    ports:
+      - "5173:5173"  # dein Dev‑Port
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules  # Dev‑Abhängigkeiten behalten
+    env_file:
+      - ./frontend/.env.local  # deine .env laden
+    stdin_open: true
+    tty: true
+
+  backend:
+    build: ./backend
+    ports:
+      - "5000:5000"  # dein Backend‑Port
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+    env_file:
+      - ./backend/.env  # deine .env laden
+    stdin_open: true
+    tty: true
