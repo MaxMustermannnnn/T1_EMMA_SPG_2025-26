@@ -1,4 +1,4 @@
-version: '3.8'
+
 
 services:
   frontend:
@@ -6,6 +6,7 @@ services:
     ports:
       - "5173:5173"  # dein Dev‑Port
     volumes:
+      - ./frontend:/app:delegated # Windows-Optimierung
       - ./frontend:/app
       - /app/node_modules  # Dev‑Abhängigkeiten behalten
     env_file:
