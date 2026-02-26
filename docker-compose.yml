@@ -25,3 +25,13 @@ services:
       - ./backend/.env  # deine .env laden
     stdin_open: true
     tty: true
+
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro  # ← WICHTIG!
+    depends_on:
+      - frontend
+      - backend
