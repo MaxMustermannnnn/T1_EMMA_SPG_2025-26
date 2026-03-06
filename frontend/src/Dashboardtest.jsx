@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
+const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:5000";
+
 function decodeJwtPayload(token) {
   if (!token) return null;
   const parts = token.split(".");
@@ -27,11 +29,36 @@ export default function Dashboardtest({ onLogout }) {
   const [vehicles, setVehicles] = useState([]);
   const [maintenances, setMaintenances] = useState([]);
   const [allMaintenances, setAllMaintenances] = useState([]);
+  const [userProfile, setUserProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [userId, setUserId] = useState(null);
 
   const token = useMemo(() => localStorage.getItem("token"), []);
+  const userFromToken = useMemo(() => decodeJwtPayload(token), [token]);
+  const storedUserName = useMemo(() => localStorage.getItem("userName"), []);
+  const storedUserEmail = useMemo(() => localStorage.getItem("userEmail"), []);
+
+  const profileDisplayName =
+    userProfile?.first_name || userProfile?.last_name
+      ? `${userProfile?.first_name || ""} ${userProfile?.last_name || ""}`.trim()
+      : null;
+
+  const displayEmail = userProfile?.email || storedUserEmail || userFromToken?.email || "Unbekannte E-Mail";
+  const displayName =
+    profileDisplayName ||
+    storedUserName ||
+    (displayEmail.includes("@") ? displayEmail.split("@")[0] : null) ||
+    "Benutzer";
+
+  const initials =
+    userProfile?.first_name && userProfile?.last_name
+      ? `${userProfile.first_name[0]}${userProfile.last_name[0]}`.toUpperCase()
+      : displayName
+          .split(" ")
+          .filter(Boolean)
+          .slice(0, 2)
+          .map((word) => word[0]?.toUpperCase())
+          .join("");
 
   useEffect(() => {
     if (!token) {
@@ -40,26 +67,27 @@ export default function Dashboardtest({ onLogout }) {
       return;
     }
 
-    const payload = decodeJwtPayload(token);
-    if (!payload?.id) {
-      setError("Token ist ungültig.");
-      setLoading(false);
-      return;
-    }
-
-    const id = Number(payload.id);
-    setUserId(id);
-
     const loadData = async () => {
       try {
-        const [vehiclesResponse, maintenanceResponse] = await Promise.all([
-          fetch("http://localhost:5000/api/vehicles", {
+        const profileId = userFromToken?.id;
+        const requests = [
+          fetch(`${API_BASE}/api/vehicles`, {
             headers: { Authorization: `Bearer ${token}` },
           }),
-          fetch("http://localhost:5000/api/maintenances", {
+          fetch(`${API_BASE}/api/maintenances`, {
             headers: { Authorization: `Bearer ${token}` },
           }),
-        ]);
+        ];
+
+        if (profileId) {
+          requests.push(
+            fetch(`${API_BASE}/api/users/${profileId}`, {
+              headers: { Authorization: `Bearer ${token}` },
+            })
+          );
+        }
+
+        const [vehiclesResponse, maintenanceResponse, profileResponse] = await Promise.all(requests);
 
         if (!vehiclesResponse.ok) throw new Error("Fahrzeuge konnten nicht geladen werden");
         const vehiclesData = await vehiclesResponse.json();
@@ -82,6 +110,11 @@ export default function Dashboardtest({ onLogout }) {
           setMaintenances(upcoming);
         }
 
+        if (profileResponse?.ok) {
+          const profileData = await profileResponse.json();
+          setUserProfile(profileData);
+        }
+
         setLoading(false);
       } catch (err) {
         console.error("Error loading data:", err);
@@ -93,6 +126,9 @@ export default function Dashboardtest({ onLogout }) {
     loadData();
   }, [token, navigate, onLogout]);
 
+  const goToDashboard = () => navigate("/dashboard");
+  const goToVehicles = () => navigate("/fahrzeuge");
+  const goToMaintenances = () => navigate("/wartungen");
   const goToProfile = () => navigate("/profile");
   const goToCalendar = () => navigate("/calendar");
 
@@ -123,33 +159,50 @@ export default function Dashboardtest({ onLogout }) {
         </div>
 
         <nav className="flex flex-col gap-2 flex-1">
-          <a className="px-4 py-3.5 rounded-xl cursor-pointer transition-all text-[15px] font-medium text-white bg-gradient-to-br from-blue-500 to-blue-600 shadow-[0_4px_12px_rgba(59,130,246,0.4)]">
+          <button
+            type="button"
+            onClick={goToDashboard}
+            className="text-left px-4 py-3.5 rounded-xl cursor-pointer transition-all text-[15px] font-medium text-white bg-gradient-to-br from-blue-500 to-blue-600 shadow-[0_4px_12px_rgba(59,130,246,0.4)]"
+          >
             Dashboard
-          </a>
-          <a className="px-4 py-3.5 rounded-xl cursor-pointer transition-all text-[15px] font-medium text-slate-400 hover:text-white hover:bg-white/10">
+          </button>
+          <button
+            type="button"
+            onClick={goToVehicles}
+            className="text-left px-4 py-3.5 rounded-xl cursor-pointer transition-all text-[15px] font-medium text-slate-400 hover:text-white hover:bg-white/10"
+          >
             Fahrzeuge
-          </a>
-          <a
-            className="px-4 py-3.5 rounded-xl cursor-pointer transition-all text-[15px] font-medium text-slate-400 hover:text-white hover:bg-white/10"
+          </button>
+          <button
+            type="button"
+            onClick={goToMaintenances}
+            className="text-left px-4 py-3.5 rounded-xl cursor-pointer transition-all text-[15px] font-medium text-slate-400 hover:text-white hover:bg-white/10"
+          >
+            Wartungen
+          </button>
+          <button
+            type="button"
+            className="text-left px-4 py-3.5 rounded-xl cursor-pointer transition-all text-[15px] font-medium text-slate-400 hover:text-white hover:bg-white/10"
             onClick={goToCalendar}
           >
             Kalender
-          </a>
-          <a
-            className="px-4 py-3.5 rounded-xl cursor-pointer transition-all text-[15px] font-medium text-slate-400 hover:text-white hover:bg-white/10"
+          </button>
+          <button
+            type="button"
+            className="text-left px-4 py-3.5 rounded-xl cursor-pointer transition-all text-[15px] font-medium text-slate-400 hover:text-white hover:bg-white/10"
             onClick={goToProfile}
           >
             Profil
-          </a>
+          </button>
         </nav>
 
         <div className="flex items-center gap-3 p-4 bg-white/5 rounded-xl mt-auto">
           <div className="w-11 h-11 bg-gradient-to-br from-blue-500 to-purple-500 rounded-xl flex items-center justify-center font-semibold text-base">
-            MK
+            {initials || "B"}
           </div>
           <div className="flex-1 min-w-0">
-            <div className="font-semibold text-sm truncate">Max Schlaffer</div>
-            <div className="text-xs text-slate-400 truncate">SCH220285@spengergasse.at</div>
+            <div className="font-semibold text-sm truncate">{displayName}</div>
+            <div className="text-xs text-slate-400 truncate">{displayEmail}</div>
           </div>
         </div>
       </aside>
@@ -161,29 +214,6 @@ export default function Dashboardtest({ onLogout }) {
           <p className="text-base text-slate-500">
             Hier ist eine Übersicht über Ihre Fahrzeuge und anstehende Termine
           </p>
-
-          <div className="mt-6 flex justify-center gap-4">
-            <button
-              onClick={onLogout}
-              className="bg-red-500 hover:bg-red-600 text-white px-6 py-2 rounded-xl font-semibold transition-all duration-200"
-            >
-              Abmelden
-            </button>
-
-            <button
-              onClick={goToProfile}
-              className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-xl font-semibold transition-all duration-200"
-            >
-              Profil
-            </button>
-
-            <button
-              onClick={goToCalendar}
-              className="bg-slate-900 hover:bg-slate-800 text-white px-6 py-2 rounded-xl font-semibold transition-all duration-200"
-            >
-              Kalender
-            </button>
-          </div>
         </header>
 
         {/* Stat Cards */}
@@ -239,7 +269,7 @@ export default function Dashboardtest({ onLogout }) {
                     <div className="text-[13px] text-slate-500">{vehicle.licensePlate}</div>
                   </div>
                   <div className="text-sm text-slate-500 font-medium">
-                    {vehicle.currentKm?.toLocaleString() || 0} km
+                    {(vehicle.mileage ?? 0).toLocaleString()} km
                   </div>
                 </div>
               ))}
