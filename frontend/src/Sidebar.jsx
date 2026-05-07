@@ -1,4 +1,7 @@
+import { useNavigate } from "react-router-dom";
+
 export default function Sidebar({ user }) {
+  const navigate = useNavigate();
   const initials =
     user?.name
       ?.split(" ")
@@ -17,13 +20,13 @@ export default function Sidebar({ user }) {
         <button className="nav-item">Profil</button>
       </nav>
 
-      <div className="sidebar-user">
+      <button type="button" className="sidebar-user sidebar-user-button" onClick={() => navigate("/profile") }>
         <div className="user-avatar">{initials}</div>
         <div className="user-info">
           <div className="user-name">{user?.name || "Benutzer"}</div>
           <div className="user-email">{user?.email || "keine E-Mail"}</div>
         </div>
-      </div>
+      </button>
     </aside>
   );
 }

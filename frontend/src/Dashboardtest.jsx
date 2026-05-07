@@ -196,7 +196,12 @@ export default function Dashboardtest({ onLogout }) {
           </button>
         </nav>
 
-        <div className="flex items-center gap-3 p-4 bg-white/5 rounded-xl mt-auto">
+        <button
+          type="button"
+          onClick={goToProfile}
+          aria-label="Profilseite öffnen"
+          className="flex items-center gap-3 p-4 bg-white/5 rounded-xl mt-auto text-left w-full transition-all hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400"
+        >
           <div className="w-11 h-11 bg-gradient-to-br from-blue-500 to-purple-500 rounded-xl flex items-center justify-center font-semibold text-base">
             {initials || "B"}
           </div>
@@ -204,7 +209,7 @@ export default function Dashboardtest({ onLogout }) {
             <div className="font-semibold text-sm truncate">{displayName}</div>
             <div className="text-xs text-slate-400 truncate">{displayEmail}</div>
           </div>
-        </div>
+        </button>
       </aside>
 
       {/* Main */}
