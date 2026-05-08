@@ -4,7 +4,7 @@ const router = express.Router(); // Subrouter für /api/maintenances
 // Datenbank & Table-Model
 const db = require("../db/db"); // Drizzle Instanz
 const { maintenances, vehicles } = require("../db/schema.js"); // Tabelle Wartungen
-const { eq, and } = require("drizzle-orm"); // WHERE-Helfer
+const { eq, inArray } = require("drizzle-orm"); // WHERE-Helfer
 
 // Get all maintenances for current user (filtered by their vehicles)
 router.get("/", async (req, res) => {
@@ -21,11 +21,12 @@ router.get("/", async (req, res) => {
       return res.json([]);
     }
 
-    // Load all maintenances and filter in code
-    const allMaintenances = await db.select().from(maintenances);
-    const filtered = allMaintenances.filter(m => vehicleIds.includes(m.vehicleId));
-    
-    res.json(filtered);
+    const userMaintenances = await db
+      .select()
+      .from(maintenances)
+      .where(inArray(maintenances.vehicleId, vehicleIds));
+
+    res.json(userMaintenances);
   } catch (error) {
     console.error("GET ALL MAINTENANCES ERROR:", error);
     res.status(500).json({ error: "Failed to fetch maintenances" });

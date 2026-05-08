@@ -55,25 +55,29 @@ export default function Wartungsuebersicht() {
 
     const loadData = async () => {
       try {
-        // Load vehicles first
-        const vehiclesResponse = await fetch(`${API_BASE}/api/vehicles`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        if (!vehiclesResponse.ok) throw new Error("Fahrzeuge konnten nicht geladen werden");
-        const vehiclesData = await vehiclesResponse.json();
-        setVehicles(Array.isArray(vehiclesData) ? vehiclesData : []);
+        const [vehiclesResponse, maintenanceResponse] = await Promise.all([
+          fetch(`${API_BASE}/api/vehicles`, {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+          fetch(`${API_BASE}/api/maintenances`, {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+        ]);
 
-        // Load maintenances
-        const maintenanceResponse = await fetch(`${API_BASE}/api/maintenances`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        if (!vehiclesResponse.ok) throw new Error("Fahrzeuge konnten nicht geladen werden");
         if (!maintenanceResponse.ok) throw new Error("Wartungen konnten nicht geladen werden");
-        const maintenanceData = await maintenanceResponse.json();
+
+        const [vehiclesData, maintenanceData] = await Promise.all([
+          vehiclesResponse.json(),
+          maintenanceResponse.json(),
+        ]);
+
+        setVehicles(Array.isArray(vehiclesData) ? vehiclesData : []);
         setMaintenances(Array.isArray(maintenanceData) ? maintenanceData : []);
-        setLoading(false);
       } catch (err) {
         console.error("Error loading data:", err);
         setError(err.message || "Fehler beim Laden der Daten");
+      } finally {
         setLoading(false);
       }
     };
