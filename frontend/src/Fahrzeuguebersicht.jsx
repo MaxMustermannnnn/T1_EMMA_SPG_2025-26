@@ -55,6 +55,7 @@ export default function Fahrzeuguebersicht() {
 	}, []);
 
 	// Daten laden beim Mount
+	useEffect(() => {
 		// Load all brands on component mount
 		const loadBrands = async () => {
 			try {

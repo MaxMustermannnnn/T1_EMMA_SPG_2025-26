@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 
 const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:5000";
 
-// JWT-Payload dekodieren (nur für User-Info, nicht für Verifizierung)
 function decodeJwtPayload(token) {
   if (!token) return null;
   const parts = token.split(".");
@@ -16,7 +15,7 @@ function decodeJwtPayload(token) {
     const json = decodeURIComponent(
       decoded
         .split("")
-        .map((char) => `%${char.charCodeAt(0).toString(16).padStart(2, "0")}`})
+        .map((char) => "%" + ("00" + char.charCodeAt(0).toString(16)).slice(-2))
         .join("")
     );
     return JSON.parse(json);
@@ -25,11 +24,16 @@ function decodeJwtPayload(token) {
   }
 }
 
-// Haupt-Dashboard-Komponente mit Übersicht über Fahrzeuge und Wartungen
 export default function Dashboardtest({ onLogout }) {
   const navigate = useNavigate();
 
-  // Token und User-Daten aus localStorage und JWT
+  const [vehicles, setVehicles] = useState([]);
+  const [maintenances, setMaintenances] = useState([]);
+  const [allMaintenances, setAllMaintenances] = useState([]);
+  const [userProfile, setUserProfile] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
   const token = useMemo(() => localStorage.getItem("token"), []);
   const userFromToken = useMemo(() => decodeJwtPayload(token), [token]);
   const storedUserName = useMemo(() => localStorage.getItem("userName"), []);
