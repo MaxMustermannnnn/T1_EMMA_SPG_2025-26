@@ -38,6 +38,10 @@ export default function Dashboardtest({ onLogout }) {
   const storedUserName = useMemo(() => localStorage.getItem("userName"), []);
   const storedUserEmail = useMemo(() => localStorage.getItem("userEmail"), []);
 
+  useEffect(() => {
+    document.title = "Carlender - Dashboard";
+  }, []);
+
   const profileDisplayName =
     userProfile?.first_name || userProfile?.last_name
       ? `${userProfile?.first_name || ""} ${userProfile?.last_name || ""}`.trim()

@@ -27,6 +27,10 @@ export default function Calendar() {
 
   const token = localStorage.getItem("token");
 
+  useEffect(() => {
+    document.title = "Carlender - Kalender";
+  }, []);
+
   const vehicleById = useMemo(() => {
     const map = {};
     for (const v of vehicles) {

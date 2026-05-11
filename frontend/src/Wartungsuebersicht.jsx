@@ -42,6 +42,10 @@ export default function Wartungsuebersicht() {
   }, [vehicles]);
 
   useEffect(() => {
+    document.title = "Carlender - Wartungen";
+  }, []);
+
+  useEffect(() => {
     if (!token) {
       setLoading(false);
       setMaintenances([]);

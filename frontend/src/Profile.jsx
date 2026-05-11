@@ -48,6 +48,10 @@ export default function Profile({ onLogout }) {
   // Gespeicherte User-ID, aus dem JWT dekodiert.
   const [userId, setUserId] = useState(null);
 
+  useEffect(() => {
+    document.title = "Carlender - Profil";
+  }, []);
+
   // Token einmal beim Mount lesen. Falls sich der Token aendert, neu laden.
   const token = useMemo(() => localStorage.getItem ("token"), []);
 

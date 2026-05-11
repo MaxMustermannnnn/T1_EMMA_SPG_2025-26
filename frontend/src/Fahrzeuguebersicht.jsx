@@ -44,6 +44,10 @@ export default function Fahrzeuguebersicht() {
 	const vehicleCount = useMemo(() => vehicles.length, [vehicles.length]);
 
 	useEffect(() => {
+		document.title = "Carlender - Fahrzeuge";
+	}, []);
+
+	useEffect(() => {
 		// Load all brands on component mount
 		const loadBrands = async () => {
 			try {

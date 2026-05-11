@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export default function Register({ onRegistered, switchToLogin }) {
   const [first_name, setFirstName] = useState("");
@@ -7,6 +7,10 @@ export default function Register({ onRegistered, switchToLogin }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    document.title = "Carlender - Registrierung";
+  }, []);
 
   async function handleSubmit(e) {
     e.preventDefault();
