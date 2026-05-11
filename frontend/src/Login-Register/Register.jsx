@@ -7,14 +7,118 @@ export default function Register({ onRegistered, switchToLogin }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  
+  // Feld-spezifische Fehler
+  const [fieldErrors, setFieldErrors] = useState({
+    first_name: "",
+    last_name: "",
+    username: "",
+    email: "",
+    password: ""
+  });
 
   useEffect(() => {
     document.title = "Carlender - Registrierung";
   }, []);
 
+  // Validierungsfunktionen
+  const validateName = (name, fieldName) => {
+    if (!name.trim()) return `${fieldName} ist erforderlich`;
+    if (name.length < 2) return `${fieldName} muss mindestens 2 Zeichen lang sein`;
+    if (name.length > 50) return `${fieldName} darf maximal 50 Zeichen lang sein`;
+    if (!/^[a-zA-ZäöüÄÖÜß\s\-']+$/.test(name)) return `${fieldName} darf nur Buchstaben, Leerzeichen, Bindestriche und Apostrophe enthalten`;
+    return "";
+  };
+
+  const validateUsername = (username) => {
+    if (!username.trim()) return "Username ist erforderlich";
+    if (username.length < 3) return "Username muss mindestens 3 Zeichen lang sein";
+    if (username.length > 20) return "Username darf maximal 20 Zeichen lang sein";
+    if (!/^[a-zA-Z0-9_-]+$/.test(username)) return "Username darf nur Buchstaben, Zahlen, Unterstriche und Bindestriche enthalten";
+    return "";
+  };
+
+  const validateEmail = (email) => {
+    if (!email.trim()) return "E-Mail ist erforderlich";
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) return "Bitte geben Sie eine gültige E-Mail-Adresse ein";
+    return "";
+  };
+
+  const validatePassword = (password) => {
+    if (!password) return "Passwort ist erforderlich";
+    if (password.length < 8) return "Passwort muss mindestens 8 Zeichen lang sein";
+    if (!/(?=.*[a-z])/.test(password)) return "Passwort muss mindestens einen Kleinbuchstaben enthalten";
+    if (!/(?=.*[A-Z])/.test(password)) return "Passwort muss mindestens einen Großbuchstaben enthalten";
+    if (!/(?=.*\d)/.test(password)) return "Passwort muss mindestens eine Zahl enthalten";
+    if (!/(?=.*[@$!%*?&])/.test(password)) return "Passwort muss mindestens ein Sonderzeichen enthalten (@$!%*?&)";
+    return "";
+  };
+
+  // Echtzeit-Validierung für einzelne Felder
+  const handleFirstNameChange = (e) => {
+    const value = e.target.value;
+    setFirstName(value);
+    const error = validateName(value, "Vorname");
+    setFieldErrors(prev => ({ ...prev, first_name: error }));
+  };
+
+  const handleLastNameChange = (e) => {
+    const value = e.target.value;
+    setLastName(value);
+    const error = validateName(value, "Nachname");
+    setFieldErrors(prev => ({ ...prev, last_name: error }));
+  };
+
+  const handleUsernameChange = (e) => {
+    const value = e.target.value;
+    setUsername(value);
+    const error = validateUsername(value);
+    setFieldErrors(prev => ({ ...prev, username: error }));
+  };
+
+  const handleEmailChange = (e) => {
+    const value = e.target.value;
+    setEmail(value);
+    const error = validateEmail(value);
+    setFieldErrors(prev => ({ ...prev, email: error }));
+  };
+
+  const handlePasswordChange = (e) => {
+    const value = e.target.value;
+    setPassword(value);
+    const error = validatePassword(value);
+    setFieldErrors(prev => ({ ...prev, password: error }));
+  };
+
   async function handleSubmit(e) {
     e.preventDefault();
     setError("");
+
+    // Alle Felder validieren
+    const firstNameError = validateName(first_name, "Vorname");
+    const lastNameError = validateName(last_name, "Nachname");
+    const usernameError = validateUsername(username);
+    const emailError = validateEmail(email);
+    const passwordError = validatePassword(password);
+
+    const newFieldErrors = {
+      first_name: firstNameError,
+      last_name: lastNameError,
+      username: usernameError,
+      email: emailError,
+      password: passwordError
+    };
+
+    setFieldErrors(newFieldErrors);
+
+    // Prüfen ob irgendein Fehler vorliegt
+    const hasErrors = Object.values(newFieldErrors).some(error => error !== "");
+    
+    if (hasErrors) {
+      setError("Bitte korrigieren Sie die markierten Fehler");
+      return;
+    }
 
     try {
       const response = await fetch("http://localhost:5000/api/users", {
@@ -53,9 +157,11 @@ export default function Register({ onRegistered, switchToLogin }) {
               id="first_name"
               type="text"
               value={first_name}
-              onChange={e => setFirstName(e.target.value)}
+              onChange={handleFirstNameChange}
+              className={fieldErrors.first_name ? "error" : ""}
               required
             />
+            {fieldErrors.first_name && <p className="field-error">{fieldErrors.first_name}</p>}
           </div>
 
           <div className="form-group">
@@ -64,9 +170,11 @@ export default function Register({ onRegistered, switchToLogin }) {
               id="last_name"
               type="text"
               value={last_name}
-              onChange={e => setLastName(e.target.value)}
+              onChange={handleLastNameChange}
+              className={fieldErrors.last_name ? "error" : ""}
               required
             />
+            {fieldErrors.last_name && <p className="field-error">{fieldErrors.last_name}</p>}
           </div>
 
           <div className="form-group">
@@ -75,9 +183,11 @@ export default function Register({ onRegistered, switchToLogin }) {
               id="username"
               type="text"
               value={username}
-              onChange={e => setUsername(e.target.value)}
+              onChange={handleUsernameChange}
+              className={fieldErrors.username ? "error" : ""}
               required
             />
+            {fieldErrors.username && <p className="field-error">{fieldErrors.username}</p>}
           </div>
 
           <div className="form-group">
@@ -86,9 +196,11 @@ export default function Register({ onRegistered, switchToLogin }) {
               id="reg-email"
               type="email"
               value={email}
-              onChange={e => setEmail(e.target.value)}
+              onChange={handleEmailChange}
+              className={fieldErrors.email ? "error" : ""}
               required
             />
+            {fieldErrors.email && <p className="field-error">{fieldErrors.email}</p>}
           </div>
 
           <div className="form-group">
@@ -97,9 +209,12 @@ export default function Register({ onRegistered, switchToLogin }) {
               id="reg-password"
               type="password"
               value={password}
-              onChange={e => setPassword(e.target.value)}
+              onChange={handlePasswordChange}
+              className={fieldErrors.password ? "error" : ""}
               required
             />
+            {fieldErrors.password && <p className="field-error">{fieldErrors.password}</p>}
+            <p className="field-hint">Mindestens 8 Zeichen, mit Groß-/Kleinbuchstaben, Zahl und Sonderzeichen</p>
           </div>
 
           {error && <p className="form-error">{error}</p>}

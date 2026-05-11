@@ -159,3 +159,29 @@
     padding: 22px 18px 20px;
   }
 }
+
+/* Feldfehler und Hinweise */
+
+.form-group input.error {
+  border-color: #dc2626;
+  background: #fef2f2;
+}
+
+.form-group input.error:focus {
+  border-color: #dc2626;
+  box-shadow: 0 0 0 1px rgba(220, 38, 38, 0.25);
+}
+
+.field-error {
+  margin-top: 4px;
+  font-size: 12px;
+  color: #dc2626;
+  font-weight: 500;
+}
+
+.field-hint {
+  margin-top: 4px;
+  font-size: 11px;
+  color: #6b7280;
+  font-style: italic;
+}
