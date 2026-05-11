@@ -212,7 +212,10 @@ export default function Dashboardtest({ onLogout }) {
           </button>
         </nav>
 
-        <div className="flex items-center gap-3 p-4 bg-white/5 rounded-xl mt-auto">
+        <div 
+          className="flex items-center gap-3 p-4 bg-white/5 rounded-xl mt-auto cursor-pointer hover:bg-white/10 transition-all"
+          onClick={goToProfile}
+        >
           <div className="w-11 h-11 bg-gradient-to-br from-blue-500 to-purple-500 rounded-xl flex items-center justify-center font-semibold text-base">
             {initials || "B"}
           </div>
