@@ -11,12 +11,16 @@ function buildDateKey(dateString) {
 
 export default function Calendar() {
   const navigate = useNavigate();
-  const [currentDate, setCurrentDate] = useState(() => new Date(2026, 2, 1));
+  const [currentDate, setCurrentDate] = useState(() => {
+    const now = new Date();
+    return new Date(now.getFullYear(), now.getMonth(), 1);
+  });
   const [vehicles, setVehicles] = useState([]);
   const [maintenances, setMaintenances] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [showForm, setShowForm] = useState(false);
+  const [selectedDate, setSelectedDate] = useState(() => buildDateKey(new Date().toISOString()));
   const [formData, setFormData] = useState({
     date: "",
     vehicleId: "",
@@ -165,27 +169,51 @@ export default function Calendar() {
       currentDate.getMonth() + 1
     ).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
     const dayEvents = eventsByDate[dateKey] || [];
+    const visibleEvents = dayEvents.slice(0, 2);
+    const remainingEvents = Math.max(0, dayEvents.length - visibleEvents.length);
+    const isSelected = selectedDate === dateKey;
+    const isToday = buildDateKey(new Date().toISOString()) === dateKey;
 
     dayCells.push(
-      <div
+      <button
+        type="button"
         key={day}
-        className="min-h-[110px] rounded-xl border border-slate-200 bg-white p-2 text-sm shadow-sm"
+        onClick={() => {
+          setSelectedDate(dateKey);
+          setFormData((prev) => ({ ...prev, date: dateKey }));
+          setShowForm(true);
+        }}
+        className={`h-24 rounded-xl border p-2 text-sm shadow-sm text-left transition overflow-hidden ${
+          isSelected
+            ? "border-indigo-500 ring-2 ring-indigo-200 bg-indigo-50"
+            : "border-slate-200 bg-white hover:border-indigo-300 hover:bg-indigo-50/40"
+        }`}
       >
-        <div className="text-xs font-semibold text-slate-500">{day}</div>
+        <div
+          className={`text-xs font-semibold ${
+            isToday ? "text-indigo-700" : "text-slate-500"
+          }`}
+        >
+          {day}
+          {isToday && " • Heute"}
+        </div>
         {dayEvents.length > 0 && (
-          <div className="mt-2 space-y-1">
-            {dayEvents.map((event) => (
+          <div className="mt-1 space-y-1">
+            {visibleEvents.map((event) => (
               <div
                 key={event.id}
-                className="rounded-md bg-indigo-50 px-2 py-1 text-xs text-indigo-700 group relative"
+                className="rounded-md bg-indigo-100/70 px-2 py-1 text-[11px] text-indigo-800 group relative"
               >
-                <div className="pr-6">
-                  <div className="font-semibold">{event.type}</div>
-                  <div className="text-indigo-600 text-[10px]">{event.vehicleLabel}</div>
+                <div className="pr-6 overflow-hidden">
+                  <div className="font-semibold truncate">{event.type}</div>
+                  <div className="text-indigo-600 text-[10px] truncate">{event.vehicleLabel}</div>
                 </div>
                 <button
                   type="button"
-                  onClick={() => deleteMaintenance(event.id)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    deleteMaintenance(event.id);
+                  }}
                   disabled={loading}
                   className="absolute right-1 top-1 rounded px-1.5 py-0.5 bg-red-500/80 text-white text-[10px] font-semibold opacity-0 group-hover:opacity-100 transition hover:bg-red-600 disabled:opacity-50"
                   title="Löschen"
@@ -194,9 +222,12 @@ export default function Calendar() {
                 </button>
               </div>
             ))}
+            {remainingEvents > 0 && (
+              <div className="text-[10px] font-semibold text-slate-500 px-1">+{remainingEvents} weitere</div>
+            )}
           </div>
         )}
-      </div>
+      </button>
     );
   }
 
@@ -324,7 +355,7 @@ export default function Calendar() {
                 value={formData.type}
                 onChange={handleInputChange}
                 className="rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-800"
-                placeholder="z.B. TUEV"
+                placeholder="z.B. TÜV"
                 required
               />
             </label>
@@ -367,7 +398,7 @@ export default function Calendar() {
         )}
 
         <div className="mt-8 rounded-3xl border border-slate-200 bg-white p-6 shadow-lg">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between gap-3">
             <button
               type="button"
               className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white bg-transparent text-lg font-semibold text-black shadow-lg shadow-slate-200 transition hover:bg-slate-50"
@@ -375,12 +406,17 @@ export default function Calendar() {
             >
               ←
             </button>
-            <h3 className="text-lg font-semibold text-slate-900">
-              {currentDate.toLocaleDateString("de-DE", {
-                month: "long",
-                year: "numeric",
-              })}
-            </h3>
+            <div className="flex flex-col items-center">
+              <h3 className="text-lg font-semibold text-slate-900">
+                {currentDate.toLocaleDateString("de-DE", {
+                  month: "long",
+                  year: "numeric",
+                })}
+              </h3>
+              <div className="mt-1 rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600">
+                Ausgewählt: {selectedDate ? new Date(selectedDate).toLocaleDateString("de-DE") : "Kein Datum"}
+              </div>
+            </div>
             <button
               type="button"
               className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white bg-transparent text-lg font-semibold text-black shadow-lg shadow-slate-200 transition hover:bg-slate-50"
