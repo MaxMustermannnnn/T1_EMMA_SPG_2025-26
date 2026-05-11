@@ -309,7 +309,7 @@ export default function Wartungsuebersicht() {
         <div className="rounded-2xl border border-slate-200 bg-white p-12 text-center shadow-sm">
           <div className="mb-4 text-5xl">📋</div>
           <p className="text-gray-600">Keine Wartungen vorhanden</p>
-          <p className="text-sm text-gray-500 mt-2">Erstelle eine neue Wartung über die Fahrzeugverwaltung</p>
+          <p className="text-sm text-gray-500 mt-2">Erstelle eine neue Wartung über den Kalender</p>
         </div>
       ) : (
         <div className="grid gap-4">
