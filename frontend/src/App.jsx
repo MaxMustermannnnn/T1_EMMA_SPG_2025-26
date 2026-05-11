@@ -1,5 +1,7 @@
 import { useState, lazy, Suspense } from "react";
 import { useNavigate, Routes, Route } from "react-router-dom";
+
+// Lazy Loading für bessere Performance - Komponenten werden erst bei Bedarf geladen
 const Login = lazy(() => import("./Login-Register/Login"));
 const Register = lazy(() => import("./Login-Register/Register"));
 const Dashboard = lazy(() => import("./Dashboardtest"));
@@ -10,7 +12,8 @@ const Calendar = lazy(() => import("./Calendar"));
 
 function App() {
   const navigate = useNavigate();
-  
+
+  // User-State aus localStorage initialisieren für persistente Sessions
   const [user, setUser] = useState(() => ({
     token: localStorage.getItem("token"),
     name: localStorage.getItem("userName"),
@@ -18,10 +21,12 @@ function App() {
   }));
 
   const [authMode, setAuthMode] = useState("login");
+
+  // Auth-Bypass für Entwicklung (kann über ENV oder localStorage aktiviert werden)
   const authBypass = import.meta.env.VITE_AUTH_BYPASS === "true" || localStorage.getItem("authBypass") === "true";
   const effectiveToken = authBypass ? "dev-token" : user.token;
 
-  // Wenn nicht angemeldet, nur Login/Register zeigen,
+  // Wenn nicht angemeldet, nur Login/Register zeigen
   if (!effectiveToken) {
     return (
       <Suspense fallback={<div className="min-h-screen flex items-center justify-center text-slate-700">Lade Seite…</div>}>
@@ -58,6 +63,7 @@ function App() {
     );
   }
 
+  // Logout-Funktion: Token und User-Daten aus localStorage entfernen
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("userName");
@@ -67,7 +73,7 @@ function App() {
     navigate("/login");
   };
 
-  // Wenn angemeldet, zeige die Routes
+  // Wenn angemeldet, zeige die Haupt-Applikation
   return (
     <Suspense fallback={<div className="min-h-screen flex items-center justify-center text-slate-700">Lade Seite…</div>}>
       <Routes>

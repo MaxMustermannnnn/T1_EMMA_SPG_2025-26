@@ -1,14 +1,16 @@
 import { useState, useEffect } from "react";
 
+// Registrierungs-Komponente mit umfassender Eingabevalidierung
 export default function Register({ onRegistered, switchToLogin }) {
+  // Formularfelder
   const [first_name, setFirstName] = useState("");
   const [last_name, setLastName] = useState("");
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  
-  // Feld-spezifische Fehler
+
+  // Individuelle Fehler für jedes Feld (für bessere UX)
   const [fieldErrors, setFieldErrors] = useState({
     first_name: "",
     last_name: "",
@@ -21,7 +23,7 @@ export default function Register({ onRegistered, switchToLogin }) {
     document.title = "Carlender - Registrierung";
   }, []);
 
-  // Validierungsfunktionen
+  // Validierung für Namen (Vorname/Nachname)
   const validateName = (name, fieldName) => {
     if (!name.trim()) return `${fieldName} ist erforderlich`;
     if (name.length < 2) return `${fieldName} muss mindestens 2 Zeichen lang sein`;
@@ -30,6 +32,7 @@ export default function Register({ onRegistered, switchToLogin }) {
     return "";
   };
 
+  // Validierung für Username (keine Sonderzeichen, Längenbegrenzung)
   const validateUsername = (username) => {
     if (!username.trim()) return "Username ist erforderlich";
     if (username.length < 3) return "Username muss mindestens 3 Zeichen lang sein";
@@ -38,6 +41,7 @@ export default function Register({ onRegistered, switchToLogin }) {
     return "";
   };
 
+  // E-Mail-Validierung mit Regex
   const validateEmail = (email) => {
     if (!email.trim()) return "E-Mail ist erforderlich";
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -45,6 +49,7 @@ export default function Register({ onRegistered, switchToLogin }) {
     return "";
   };
 
+  // Sichere Passwort-Validierung (Komplexitätsanforderungen)
   const validatePassword = (password) => {
     if (!password) return "Passwort ist erforderlich";
     if (password.length < 8) return "Passwort muss mindestens 8 Zeichen lang sein";

@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 
 const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:5000";
 
+// JWT-Payload dekodieren (nur für User-Info, nicht für Verifizierung)
 function decodeJwtPayload(token) {
   if (!token) return null;
   const parts = token.split(".");
@@ -15,7 +16,7 @@ function decodeJwtPayload(token) {
     const json = decodeURIComponent(
       decoded
         .split("")
-        .map((char) => `%${char.charCodeAt(0).toString(16).padStart(2, "0")}`)
+        .map((char) => `%${char.charCodeAt(0).toString(16).padStart(2, "0")}`})
         .join("")
     );
     return JSON.parse(json);
@@ -24,15 +25,11 @@ function decodeJwtPayload(token) {
   }
 }
 
+// Haupt-Dashboard-Komponente mit Übersicht über Fahrzeuge und Wartungen
 export default function Dashboardtest({ onLogout }) {
   const navigate = useNavigate();
-  const [vehicles, setVehicles] = useState([]);
-  const [maintenances, setMaintenances] = useState([]);
-  const [allMaintenances, setAllMaintenances] = useState([]);
-  const [userProfile, setUserProfile] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
 
+  // Token und User-Daten aus localStorage und JWT
   const token = useMemo(() => localStorage.getItem("token"), []);
   const userFromToken = useMemo(() => decodeJwtPayload(token), [token]);
   const storedUserName = useMemo(() => localStorage.getItem("userName"), []);
@@ -42,6 +39,7 @@ export default function Dashboardtest({ onLogout }) {
     document.title = "Carlender - Dashboard";
   }, []);
 
+  // Anzeigename und Initialen für User-Display
   const profileDisplayName =
     userProfile?.first_name || userProfile?.last_name
       ? `${userProfile?.first_name || ""} ${userProfile?.last_name || ""}`.trim()
@@ -64,12 +62,14 @@ export default function Dashboardtest({ onLogout }) {
           .map((word) => word[0]?.toUpperCase())
           .join("");
 
+  // Memoized Maps für Performance-Optimierung
   const vehicleMap = useMemo(() => {
     const map = new Map();
     vehicles.forEach((vehicle) => map.set(vehicle.id, vehicle));
     return map;
   }, [vehicles]);
 
+  // Berechnung überfälliger Wartungen
   const overdueCount = useMemo(() => {
     return allMaintenances.reduce((count, m) => {
       if (m.completed) return count;

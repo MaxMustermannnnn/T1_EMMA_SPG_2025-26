@@ -3,13 +3,17 @@ import { useNavigate } from "react-router-dom";
 
 const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:5000";
 
+// Hilfsfunktion: Formatiert Fahrzeug-Label für Anzeige
 function formatLabel(vehicle) {
 	const parts = [vehicle.brand, vehicle.model, vehicle.licensePlate].filter(Boolean);
 	return parts.length > 0 ? parts.join(" ") : "Fahrzeug";
 }
 
+// Haupt-Komponente für Fahrzeugverwaltung (CRUD-Interface)
 export default function Fahrzeuguebersicht() {
 	const navigate = useNavigate();
+
+	// State für Fahrzeugliste und UI-Zustände
 	const [vehicles, setVehicles] = useState([]);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState("");
@@ -19,6 +23,8 @@ export default function Fahrzeuguebersicht() {
 	const [formError, setFormError] = useState("");
 	const [saving, setSaving] = useState(false);
 	const [deletingId, setDeletingId] = useState(null);
+
+	// Formulardaten für Erstellung/Bearbeitung
 	const [formData, setFormData] = useState({
 		type: "",
 		brand: "",
@@ -31,8 +37,8 @@ export default function Fahrzeuguebersicht() {
 		notes: "",
 		bildurl: "",
 	});
-	
-	// State für Autocomplete Vorschläge
+
+	// Autocomplete-Funktionen für Marken/Modelle
 	const [brandSuggestions, setBrandSuggestions] = useState([]);
 	const [modelSuggestions, setModelSuggestions] = useState([]);
 	const [showBrandDropdown, setShowBrandDropdown] = useState(false);
@@ -41,13 +47,14 @@ export default function Fahrzeuguebersicht() {
 
 	const token = localStorage.getItem("token");
 
+	// Memoized Fahrzeug-Anzahl für Performance
 	const vehicleCount = useMemo(() => vehicles.length, [vehicles.length]);
 
 	useEffect(() => {
 		document.title = "Carlender - Fahrzeuge";
 	}, []);
 
-	useEffect(() => {
+	// Daten laden beim Mount
 		// Load all brands on component mount
 		const loadBrands = async () => {
 			try {
