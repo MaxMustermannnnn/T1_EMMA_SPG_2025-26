@@ -58,48 +58,61 @@ export default function Calendar() {
 
   useEffect(() => {
     if (!token) return;
-    const loadVehicles = async () => {
+    const controller = new AbortController();
+
+    const loadData = async () => {
+      setLoading(true);
       setError("");
       try {
-        const response = await fetch(`${API_BASE}/api/vehicles`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        const data = await response.json();
-        if (!response.ok) {
-          throw new Error(data.error || "Fahrzeuge konnten nicht geladen werden");
+        const [vehiclesResponse, maintenancesResponse] = await Promise.all([
+          fetch(`${API_BASE}/api/vehicles`, {
+            headers: { Authorization: `Bearer ${token}` },
+            signal: controller.signal,
+          }),
+          fetch(`${API_BASE}/api/maintenances`, {
+            headers: { Authorization: `Bearer ${token}` },
+            signal: controller.signal,
+          }),
+        ]);
+
+        const vehiclesData = await vehiclesResponse.json();
+        if (!vehiclesResponse.ok) {
+          throw new Error(vehiclesData.error || "Fahrzeuge konnten nicht geladen werden");
         }
-        setVehicles(Array.isArray(data) ? data : []);
+        setVehicles(Array.isArray(vehiclesData) ? vehiclesData : []);
+
+        const maintenanceData = await maintenancesResponse.json();
+        if (!maintenancesResponse.ok) {
+          throw new Error(maintenanceData.error || "Wartungen konnten nicht geladen werden");
+        }
+        setMaintenances(Array.isArray(maintenanceData) ? maintenanceData : []);
       } catch (err) {
-        setError(err.message || "Fahrzeuge konnten nicht geladen werden");
+        if (err.name !== "AbortError") {
+          setError(err.message || "Daten konnten nicht geladen werden");
+        }
+      } finally {
+        setLoading(false);
       }
     };
 
-    loadVehicles();
+    loadData();
+    return () => controller.abort();
   }, [token]);
 
-  const loadMaintenances = async (vehicleList) => {
+  const refreshMaintenances = async () => {
     if (!token) return;
-    setLoading(true);
     setError("");
     try {
-      const results = await Promise.all(
-        vehicleList.map(async (vehicle) => {
-          const response = await fetch(
-            `${API_BASE}/api/maintenances/vehicle/${vehicle.id}`,
-            { headers: { Authorization: `Bearer ${token}` } }
-          );
-          const data = await response.json();
-          if (!response.ok) {
-            throw new Error(data.error || "Wartungen konnten nicht geladen werden");
-          }
-          return Array.isArray(data) ? data : [];
-        })
-      );
-      setMaintenances(results.flat());
+      const response = await fetch(`${API_BASE}/api/maintenances`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || "Wartungen konnten nicht geladen werden");
+      }
+      setMaintenances(Array.isArray(data) ? data : []);
     } catch (err) {
       setError(err.message || "Wartungen konnten nicht geladen werden");
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -119,21 +132,13 @@ export default function Calendar() {
       if (!response.ok) {
         throw new Error(data.error || "Termin konnte nicht gelöscht werden");
       }
-      await loadMaintenances(vehicles);
+      await refreshMaintenances();
     } catch (err) {
       setError(err.message || "Termin konnte nicht gelöscht werden");
     } finally {
       setLoading(false);
     }
   };
-
-  useEffect(() => {
-    if (vehicles.length > 0) {
-      loadMaintenances(vehicles);
-    } else {
-      setMaintenances([]);
-    }
-  }, [vehicles]);
 
   const daysInMonth = new Date(
     currentDate.getFullYear(),
@@ -232,7 +237,7 @@ export default function Calendar() {
       }
       setShowForm(false);
       setFormData({ date: "", vehicleId: "", type: "", category: "", description: "" });
-      await loadMaintenances(vehicles);
+      await refreshMaintenances();
     } catch (err) {
       setError(err.message || "Termin konnte nicht gespeichert werden");
     } finally {

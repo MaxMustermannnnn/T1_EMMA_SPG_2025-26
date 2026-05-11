@@ -60,6 +60,21 @@ export default function Dashboardtest({ onLogout }) {
           .map((word) => word[0]?.toUpperCase())
           .join("");
 
+  const vehicleMap = useMemo(() => {
+    const map = new Map();
+    vehicles.forEach((vehicle) => map.set(vehicle.id, vehicle));
+    return map;
+  }, [vehicles]);
+
+  const overdueCount = useMemo(() => {
+    return allMaintenances.reduce((count, m) => {
+      if (m.completed) return count;
+      if (!m.date && !m.nextDueDate) return count;
+      const checkDate = new Date(m.nextDueDate || m.date);
+      return checkDate < new Date() ? count + 1 : count;
+    }, 0);
+  }, [allMaintenances]);
+
   useEffect(() => {
     if (!token) {
       if (onLogout) onLogout();
@@ -132,13 +147,6 @@ export default function Dashboardtest({ onLogout }) {
   const goToProfile = () => navigate("/profile");
   const goToCalendar = () => navigate("/calendar");
 
-  const overdueCount = allMaintenances.filter(m => {
-    if (m.completed) return false;
-    if (!m.date && !m.nextDueDate) return false;
-    const checkDate = new Date(m.nextDueDate || m.date);
-    return checkDate < new Date();
-  }).length;
-
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-200 flex items-center justify-center">
@@ -196,12 +204,7 @@ export default function Dashboardtest({ onLogout }) {
           </button>
         </nav>
 
-        <button
-          type="button"
-          onClick={goToProfile}
-          aria-label="Profilseite öffnen"
-          className="flex items-center gap-3 p-4 bg-white/5 rounded-xl mt-auto text-left w-full transition-all hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400"
-        >
+        <div className="flex items-center gap-3 p-4 bg-white/5 rounded-xl mt-auto">
           <div className="w-11 h-11 bg-gradient-to-br from-blue-500 to-purple-500 rounded-xl flex items-center justify-center font-semibold text-base">
             {initials || "B"}
           </div>
@@ -209,7 +212,7 @@ export default function Dashboardtest({ onLogout }) {
             <div className="font-semibold text-sm truncate">{displayName}</div>
             <div className="text-xs text-slate-400 truncate">{displayEmail}</div>
           </div>
-        </button>
+        </div>
       </aside>
 
       {/* Main */}
@@ -300,7 +303,7 @@ export default function Dashboardtest({ onLogout }) {
             {maintenances.length > 0 ? (
               <div className="mb-4">
                 {maintenances.slice(0, 2).map((maint) => {
-                  const vehicle = vehicles.find(v => v.id === maint.vehicleId);
+                  const vehicle = vehicleMap.get(maint.vehicleId);
                   return (
                     <div
                       key={maint.id}
